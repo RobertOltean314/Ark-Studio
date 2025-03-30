@@ -6,7 +6,7 @@ import App from "./App";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 // Import main SCSS file (which includes Bootstrap and custom styles)
-import "./index.css";
+import "./styles/index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
