@@ -1451,3 +1451,27 @@ h6 {
   animation: fadeIn 0.8s ease forwards;
   animation-delay: 1.2s;
 }
+
+/* Scrollbar customization for webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--color-darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-purple-horizontal);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-purple);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-purple) var(--color-darker);
+}
