@@ -2,7 +2,7 @@
 import React from "react";
 import { Outlet, Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import AppNavbar from "./AppNavbar";
+import AppNavbar from "./homepage/AppNavbar";
 import "../../styles/app/AppLayout.css";
 
 const AppLayout: React.FC = () => {

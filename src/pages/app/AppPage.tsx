@@ -1,7 +1,7 @@
 // components/layouts/DashboardLayout.tsx
 import React from "react";
 import { Outlet } from "react-router-dom";
-import AppNavbar from "../../components/app/AppNavbar";
+import AppNavbar from "../../components/app/homepage/AppNavbar";
 import "../../styles/app/AppPage.css";
 
 const AppPage: React.FC = () => {
