@@ -2,7 +2,6 @@
 import { useEffect, useRef } from "react";
 // First, modify the useScrollEffects hook (in its file) to accept and update external states:
 export function useScrollEffects(
-  initialActiveSection: string,
   setActiveSection: React.Dispatch<React.SetStateAction<string>>,
   setAnimatedElements: React.Dispatch<
     React.SetStateAction<Record<string, boolean>>

@@ -2,6 +2,17 @@ import React from "react";
 import StatCard from "../../ui/StatCard";
 import Button from "../../ui/Button";
 
+interface Trend {
+  value: string;
+  type: "positive" | "negative";
+}
+interface HeroStat {
+  label: string;
+  trend: Trend;
+  value: string;
+  period: string;
+}
+
 interface HeroSectionProps {
   registerSectionRef: (id: string, ref: HTMLElement | null) => void;
   parallax: { x: number; y: number };
@@ -11,7 +22,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
   registerSectionRef,
   parallax,
 }) => {
-  const heroStats = [
+  const heroStats: HeroStat[] = [
     {
       label: "Earnings",
       trend: { value: "+15%", type: "positive" },
@@ -26,7 +37,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
     },
     {
       label: "Hours",
-      trend: { value: "-8", type: "negative" },
+      trend: { value: "-8", type: "positive" },
       value: "164",
       period: "This Month",
     },

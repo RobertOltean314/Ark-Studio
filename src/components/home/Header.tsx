@@ -1,5 +1,4 @@
 import DesktopNav from "./navs/DesktopNav";
-import MobileNav from "./navs/MobileNav";
 import { NavLink } from "@/types/types";
 
 interface HeaderProps {
@@ -9,12 +8,7 @@ interface HeaderProps {
   navLinks: NavLink[];
 }
 
-const Header: React.FC<HeaderProps> = ({
-  activeSection,
-  isMenuOpen,
-  setIsMenuOpen,
-  navLinks,
-}) => {
+const Header: React.FC<HeaderProps> = ({ activeSection, navLinks }) => {
   return (
     <header
       className={`header ${activeSection !== "hero" ? "header-scrolled" : ""}`}
@@ -24,15 +18,7 @@ const Header: React.FC<HeaderProps> = ({
           <span className="logo-text">ARK</span>
           <span className="logo-text-sub">STUDIO</span>
         </div>
-
         <DesktopNav activeSection={activeSection} navLinks={navLinks} />
-
-        <MobileNav
-          isMenuOpen={isMenuOpen}
-          activeSection={activeSection}
-          setIsMenuOpen={setIsMenuOpen}
-          navLinks={navLinks}
-        />
       </div>
     </header>
   );
