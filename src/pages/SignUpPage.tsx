@@ -78,7 +78,7 @@ const SignUp: React.FC = () => {
         formData.email,
         formData.password
       );
-      navigate("/");
+      navigate("/projects");
     } catch (err: any) {
       console.error("Signup error:", err);
       if (err.code === "auth/email-already-in-use") {
@@ -99,7 +99,7 @@ const SignUp: React.FC = () => {
       setLoading(true);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/");
+      navigate("/projects");
     } catch (err: any) {
       console.error("Google signup error:", err);
       setError("Failed to sign up with Google. Please try again.");

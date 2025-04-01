@@ -42,7 +42,7 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      navigate("/"); // Redirect to dashboard after successful login
+      navigate("/projects"); // Redirect to dashboard after successful login
     } catch (err: any) {
       console.error("Login error:", err);
 
@@ -69,7 +69,7 @@ const Login: React.FC = () => {
       setLoading(true);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/"); // Redirect to dashboard after successful login
+      navigate("/projects");
     } catch (err: any) {
       console.error("Google login error:", err);
       setError("Failed to sign in with Google. Please try again.");
