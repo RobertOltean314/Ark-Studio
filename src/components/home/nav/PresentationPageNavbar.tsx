@@ -1,11 +1,15 @@
-import { NavLink } from "@/types/types";
+import React from "react";
+import { NavLink } from "../../../types/types";
 
 interface DesktopNavProps {
   activeSection: string;
   navLinks: NavLink[];
 }
 
-const DesktopNav: React.FC<DesktopNavProps> = ({ activeSection, navLinks }) => {
+const PresentationPageNavbar: React.FC<DesktopNavProps> = ({
+  activeSection,
+  navLinks,
+}) => {
   return (
     <nav className="desktop-nav">
       <ul className="nav-links">
@@ -24,4 +28,4 @@ const DesktopNav: React.FC<DesktopNavProps> = ({ activeSection, navLinks }) => {
   );
 };
 
-export default DesktopNav;
+export default PresentationPageNavbar;

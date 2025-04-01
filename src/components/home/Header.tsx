@@ -1,26 +1,66 @@
-import DesktopNav from "./navs/DesktopNav";
-import { NavLink } from "@/types/types";
+import React, { useState, useEffect } from "react";
+import PresentationPageNavbar from "./nav/PresentationPageNavbar";
+import { useAuthNav } from "../../hooks/useAuthNav";
 
 interface HeaderProps {
   activeSection: string;
-  isMenuOpen: boolean;
-  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  navLinks: NavLink[];
 }
 
-const Header: React.FC<HeaderProps> = ({ activeSection, navLinks }) => {
+const Header: React.FC<HeaderProps> = ({ activeSection }) => {
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  // Get authentication-aware navigation links
+  const { navLinks } = useAuthNav();
+
+  // Handle scroll to change header background
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <header
-      className={`header ${activeSection !== "hero" ? "header-scrolled" : ""}`}
-    >
+    <header className={`header ${isScrolled ? "header-scrolled" : ""}`}>
       <div className="header-container">
-        <div className="logo">
+        <a href="/" className="logo">
           <span className="logo-text">ARK</span>
-          <span className="logo-text-sub">STUDIO</span>
-        </div>
-        <DesktopNav activeSection={activeSection} navLinks={navLinks} />
+          <span className="logo-text-sub">Studio</span>
+        </a>
+
+        {/* Desktop Navigation */}
+        <PresentationPageNavbar
+          activeSection={activeSection}
+          navLinks={navLinks}
+        />
+
+        {/* Mobile Menu Button */}
+        <button
+          className="menu-toggle"
+          onClick={toggleMobileMenu}
+          aria-label="Toggle menu"
+        >
+          <div className={`hamburger ${isMobileMenuOpen ? "open" : ""}`}></div>
+        </button>
       </div>
     </header>
   );
 };
+
 export default Header;

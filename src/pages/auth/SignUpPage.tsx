@@ -6,8 +6,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { auth } from "../../firebase/config";
-import "../styles/AuthPage.css";
+import { auth } from "../../../firebase/config";
+import "../../styles/auth/AuthPage.css";
 
 // Import icons
 import {
@@ -78,7 +78,7 @@ const SignUp: React.FC = () => {
         formData.email,
         formData.password
       );
-      navigate("/projects");
+      navigate("/app");
     } catch (err: any) {
       console.error("Signup error:", err);
       if (err.code === "auth/email-already-in-use") {
@@ -99,7 +99,7 @@ const SignUp: React.FC = () => {
       setLoading(true);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/projects");
+      navigate("/app");
     } catch (err: any) {
       console.error("Google signup error:", err);
       setError("Failed to sign up with Google. Please try again.");

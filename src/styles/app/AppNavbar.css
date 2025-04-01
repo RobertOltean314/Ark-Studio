@@ -1,0 +1,329 @@
+/* styles/AppNavbar.css */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--header-height);
+  z-index: 1000;
+  background-color: var(--color-dark-blue);
+  box-shadow: var(--shadow-md);
+}
+
+.app-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  padding: 0 2rem;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+}
+
+.app-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--color-text-light);
+  line-height: 1;
+  z-index: 1001;
+}
+
+.app-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  height: 100%;
+}
+
+.app-nav-links {
+  display: flex;
+  height: 100%;
+}
+
+.app-nav-links li {
+  height: 100%;
+}
+
+.app-nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 100%;
+  padding: 0 1.25rem;
+  font-weight: 500;
+  color: var(--color-text);
+  position: relative;
+  transition: color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.app-nav-links a:hover {
+  color: var(--color-text-light);
+  background-color: rgba(140, 82, 255, 0.1);
+}
+
+.app-nav-links a.active {
+  color: var(--color-text-light);
+  background-color: rgba(140, 82, 255, 0.2);
+}
+
+.app-nav-links a.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--gradient-purple-horizontal);
+}
+
+/* User Profile */
+.app-user-profile {
+  position: relative;
+}
+
+.app-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(140, 82, 255, 0.1);
+  border: 1px solid rgba(140, 82, 255, 0.2);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.app-profile-trigger:hover {
+  background-color: rgba(140, 82, 255, 0.2);
+}
+
+.app-user-avatar,
+.app-user-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.app-user-avatar {
+  object-fit: cover;
+}
+
+.app-user-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-purple-horizontal);
+  color: var(--color-text-light);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.app-username {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 200px;
+  background: var(--color-dark-blue-lighter);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: var(--border-glow);
+  animation: fadeIn 0.2s ease;
+  z-index: 1000;
+}
+
+.app-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.app-dropdown-item:hover {
+  background-color: rgba(140, 82, 255, 0.1);
+  color: var(--color-text-light);
+}
+
+button.app-dropdown-item {
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+button.app-dropdown-item:nth-child(2) {
+  color: var(--color-red);
+}
+
+button.app-dropdown-item:nth-child(2):hover {
+  background-color: rgba(248, 114, 114, 0.1);
+}
+
+/* Mobile */
+.app-menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  z-index: 1001;
+}
+
+.app-mobile-nav {
+  display: none;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  width: 100%;
+  height: calc(100vh - var(--header-height));
+  background-color: var(--color-dark-blue);
+  transform: translateX(100%);
+  transition: transform var(--transition-medium);
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.app-mobile-nav.open {
+  transform: translateX(0);
+}
+
+.app-mobile-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin: 1.5rem;
+  background: rgba(140, 82, 255, 0.1);
+  border-radius: var(--border-radius-md);
+}
+
+.app-mobile-user-avatar,
+.app-mobile-user-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.app-mobile-user-avatar {
+  object-fit: cover;
+}
+
+.app-mobile-user-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-purple-horizontal);
+  color: var(--color-text-light);
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.app-mobile-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-mobile-username {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--color-text-light);
+}
+
+.app-mobile-user-email {
+  color: var(--color-text-dim);
+  font-size: 0.9rem;
+}
+
+.app-mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 1.5rem 1.5rem;
+}
+
+.app-mobile-nav-links li a {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  color: var(--color-text);
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.app-mobile-nav-links li a:hover,
+.app-mobile-nav-links li a.active {
+  background-color: rgba(140, 82, 255, 0.1);
+  color: var(--color-text-light);
+}
+
+.app-mobile-logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin: 1.5rem;
+  background-color: rgba(248, 114, 114, 0.1);
+  border: 1px solid rgba(248, 114, 114, 0.3);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-red);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.app-mobile-logout-button:hover {
+  background-color: rgba(248, 114, 114, 0.2);
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
+  .app-nav-links a {
+    padding: 0 0.75rem;
+  }
+
+  .app-nav-links a span {
+    display: none;
+  }
+
+  .app-username {
+    max-width: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-desktop-nav {
+    display: none;
+  }
+
+  .app-menu-toggle {
+    display: block;
+  }
+
+  .app-mobile-nav {
+    display: block;
+  }
+}

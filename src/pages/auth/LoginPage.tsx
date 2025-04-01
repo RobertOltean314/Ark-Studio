@@ -6,8 +6,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "firebase/auth";
-import { auth } from "../../firebase/config";
-import "../styles/AuthPage.css";
+import { auth } from "../../../firebase/config";
+import "../../styles/auth/AuthPage.css";
 
 // Import icons
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
@@ -42,7 +42,7 @@ const Login: React.FC = () => {
     try {
       setLoading(true);
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      navigate("/projects"); // Redirect to dashboard after successful login
+      navigate("/app"); // Redirect to dashboard after successful login
     } catch (err: any) {
       console.error("Login error:", err);
 
@@ -69,7 +69,7 @@ const Login: React.FC = () => {
       setLoading(true);
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-      navigate("/projects");
+      navigate("/app");
     } catch (err: any) {
       console.error("Google login error:", err);
       setError("Failed to sign in with Google. Please try again.");

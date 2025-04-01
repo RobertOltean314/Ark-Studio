@@ -6,18 +6,26 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import HomePage from "./pages/HomePage";
-import SignUpPage from "./pages/SignUpPage";
-import LoginPage from "./pages/LoginPage";
-import ProfilePage from "./pages/ProfilePage";
+import PresentationPage from "./pages/presentation/PresentationPage"; // Your public landing page
+import SignUpPage from "./pages/auth/SignUpPage";
+import LoginPage from "./pages/auth/LoginPage";
+
+// App pages (authenticated area)
+import AppLayout from "./components/app/AppLayout";
+import AppPage from "./pages/app/AppPage"; // Main dashboard after login
+import ProfilePage from "./pages/app/ProfilePage";
+// import ProjectsPage from "./pages/app/ProjectsPage";
+// import ClientsPage from "./pages/app/ClientsPage";
+// import CalculatorPage from "./pages/app/CalculatorPage";
+// import TimeTrackingPage from "./pages/app/TimeTrackingPage";
+// import StatisticsPage from "./pages/app/StatisticsPage";
+
 import "./styles/App.css";
 
-// Private route component to protect authenticated routes
-interface PrivateRouteProps {
-  children: React.ReactNode;
-}
-
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+// Component to handle authenticated redirection
+// If the user is logged in and tries to access the public home page,
+// they'll be redirected to the app dashboard
+const HomeRedirect: React.FC = () => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
@@ -29,39 +37,35 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
     );
   }
 
-  return currentUser ? <>{children}</> : <Navigate to="/login" />;
+  // If user is logged in, redirect to app dashboard
+  if (currentUser) {
+    return <Navigate to="/app" />;
+  }
+
+  // Otherwise, show the public presentation page
+  return <PresentationPage />;
 };
 
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route
-        path="/profile"
-        element={
-          <PrivateRoute>
-            <ProfilePage />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/projects"
-        element={
-          <PrivateRoute>
-            <div>Projects Page (Coming Soon)</div>
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/time-tracking"
-        element={
-          <PrivateRoute>
-            <div>Time Tracking Page (Coming Soon)</div>
-          </PrivateRoute>
-        }
-      />
+      {/* Public routes */}
+      <Route path="/" element={<HomeRedirect />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/login" element={<LoginPage />} />
+
+      {/* App routes (authenticated) */}
+      <Route path="/app" element={<AppLayout />}>
+        <Route index element={<AppPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        {/* <Route path="projects" element={<ProjectsPage />} />
+        <Route path="clients" element={<ClientsPage />} />
+        <Route path="calculator" element={<CalculatorPage />} />
+        <Route path="time-tracking" element={<TimeTrackingPage />} />
+        <Route path="statistics" element={<StatisticsPage />} /> */}
+      </Route>
+
+      {/* Catch-all route */}
       <Route path="*" element={<div>Page Not Found</div>} />
     </Routes>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useMouseParallax } from "@/hooks/useMouseParallax";
 import { useSectionTracker } from "@/hooks/useSectionTracker";
-import "../styles/HomePage.css";
+import "../../styles/presentation/PresentationPage.css";
 
 // Import section components
 import Header from "@components/home/Header";
@@ -16,7 +16,7 @@ import Footer from "@/components/home/sections/Footer";
 // Import data
 import { navLinks } from "@/data/home/navLinks";
 
-const HomePage: React.FC = () => {
+const PresentationPage: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const parallax = useMouseParallax(50);
 
@@ -62,4 +62,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default PresentationPage;
