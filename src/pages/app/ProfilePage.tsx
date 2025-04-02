@@ -10,6 +10,8 @@ import ProfileCard from "../../components/app/profile/ProfileCard";
 import ProfileActions from "../../components/app/profile/ProfileActions";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
+import "../../styles/app/ProfilePage.css";
+
 // Interface for form data
 export interface FormData {
   displayName: string;
