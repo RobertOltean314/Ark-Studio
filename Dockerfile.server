@@ -1,0 +1,21 @@
+# Use official Node.js image
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY server/package*.json ./
+
+# Install dependencies (including NestJS CLI for dev)
+RUN npm install -g @nestjs/cli
+RUN npm install
+
+# Copy the rest of the code
+COPY server/ ./
+
+# Expose the NestJS port
+EXPOSE 3000
+
+# Run in dev mode with auto-restart on changes
+CMD ["npm", "run", "start:dev"]

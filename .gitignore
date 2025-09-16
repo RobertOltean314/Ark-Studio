@@ -1,0 +1,75 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package.json*
+package-lock.json*
+yarn.lock*
+.pnpm-lock.yaml
+
+# Angular
+/dist/
+/.angular/cache/
+/.angular/local/
+/.angular/tmp/
+
+# Build
+/build/
+/tmp/
+/out/
+
+# Environment and credentials
+.env
+.env.*
+*.env
+firebase-adminsdk.json/
+client/firebase.json
+client/firestore.rules
+client/firestore.indexes.json
+client/public/
+client/src/environments/environment*.ts
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+*.pid
+docker-compose.override.yaml
+
+# Misc
+*.bak
+*.tmp
+*.orig
+
+# Coverage
+coverage/
+
+# Test
+/test-results/
+
+# Ignore generated files
+client/public/favicon.ico
+
+# Ignore server build artifacts
+server/dist/
+
+# Ignore client build artifacts
+client/dist/
+
+# Ignore server logs
+server/logs/
+
+# Ignore client logs
+client/logs/
