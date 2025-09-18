@@ -1,3 +1,9 @@
-<div class="min-h-screen bg-gray-100">
-  <router-outlet></router-outlet>
+<div class="app-container">
+  <!-- Show navbar only when not on welcome page -->
+  <app-navbar></app-navbar>
+
+  <!-- Main content area -->
+  <main [class.with-navbar]="!isWelcomePage" class="main-content">
+    <router-outlet></router-outlet>
+  </main>
 </div>

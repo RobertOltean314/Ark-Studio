@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { QuoteService, Quote } from './quote.service';
 import { AuthService } from '../auth/auth.service';
-import { RouterOutlet } from '@angular/router';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-welcome',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule],
   templateUrl: './welcome.component.html',
   styleUrls: ['./welcome.component.css'],
   animations: [
@@ -31,12 +31,19 @@ import { trigger, transition, style, animate } from '@angular/animations';
 })
 export class WelcomeComponent implements OnInit {
   title = 'Ark Studio';
-  quote: Quote | null = null;
   isLoading = false;
 
-  constructor(public authService: AuthService, private quoteService: QuoteService) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   ngOnInit() {}
+
+  isUserLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  getUserName(): string | null {
+    return this.authService.getUserName();
+  }
 
   async signInWithGoogle() {
     this.isLoading = true;
@@ -47,8 +54,8 @@ export class WelcomeComponent implements OnInit {
     }
   }
 
-  goToDashboard() {
-    window.location.href = '/dashboard'; // Adjust the URL as needed
+  goToProjects() {
+    window.location.href = '/projects';
   }
 
   signOut() {

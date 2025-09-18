@@ -10,7 +10,6 @@ export class AuthService {
   user$: Observable<any>;
 
   constructor() {
-    // Use authState for real-time user updates, shared across subscribers
     this.user$ = authState(this.auth).pipe(
       shareReplay(1) // Cache the latest user state for new subscribers
     );
@@ -29,5 +28,21 @@ export class AuthService {
 
   async signOut() {
     await signOut(this.auth);
+  }
+
+  isLoggedIn(): boolean {
+    return this.auth.currentUser !== null;
+  }
+
+  getUserName(): string | null {
+    return this.auth.currentUser ? this.auth.currentUser.displayName : null;
+  }
+
+  getUserEmail(): string | null {
+    return this.auth.currentUser ? this.auth.currentUser.email : null;
+  }
+
+  getUserId(): string | null {
+    return this.auth.currentUser ? this.auth.currentUser.uid : null;
   }
 }

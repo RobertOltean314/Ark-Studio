@@ -1,0 +1,13 @@
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.main-content.with-navbar {
+  padding-top: 0; /* Navbar is sticky, no need for padding */
+}
