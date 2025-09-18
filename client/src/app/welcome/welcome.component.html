@@ -1,0 +1,105 @@
+<div
+    class="min-h-screen bg-gradient-to-br from-purple-900 via-indigo-800 to-pink-600 relative overflow-hidden flex items-center justify-center p-4 sm:p-8">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+            class="absolute -top-40 -right-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse">
+        </div>
+        <div
+            class="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000">
+        </div>
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-indigo-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-4000">
+        </div>
+    </div>
+
+    <!-- Main card with enhanced glassmorphism -->
+    <div @cardFade
+        class="bg-white bg-opacity-10 backdrop-blur-xl border border-white border-opacity-20 rounded-2xl shadow-2xl p-8 sm:p-12 max-w-md w-full text-center transition-all duration-500 hover:-translate-y-3 hover:shadow-pink-500/25 hover:shadow-3xl relative z-10 before:absolute before:inset-0 before:rounded-2xl before:bg-gradient-to-r before:from-purple-400/10 before:via-pink-400/10 before:to-indigo-400/10 before:opacity-0 before:transition-opacity before:duration-500 hover:before:opacity-100">
+
+        <!-- Animated title with gradient text -->
+        <div class="relative mb-8">
+            <h1
+                class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-200 via-pink-200 to-indigo-200 bg-clip-text text-transparent mb-2 font-sans tracking-tight animate-fade-in">
+                {{ title }}
+            </h1>
+            <div class="w-20 h-1 bg-gradient-to-r from-purple-400 to-pink-400 mx-auto rounded-full animate-pulse"></div>
+        </div>
+
+        <!-- Welcome message for logged-in user with enhanced styling -->
+        <div *ngIf="authService.user$ | async as user" class="mb-10 animate-slide-up">
+            <div class="mb-6 p-6 bg-white bg-opacity-5 rounded-xl border border-white border-opacity-10">
+                <p class="text-xl sm:text-2xl text-purple-100 font-medium mb-2 animate-fade-in">
+                    Welcome back, <span
+                        class="bg-gradient-to-r from-pink-300 to-purple-300 bg-clip-text text-transparent font-bold">{{
+                        user.displayName }}</span>! 🎬
+                </p>
+                <p class="text-purple-200 text-sm opacity-90">Remember, small progress is better than no progress!</p>
+            </div>
+
+            <div class="space-y-4">
+                <button (click)="goToDashboard()" aria-label="Take me to the App"
+                    class="group w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-4 px-8 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-500/50 transform active:scale-95 relative overflow-hidden">
+                    <span class="relative z-10 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2 group-hover:animate-bounce" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                        Go to Dashboard
+                    </span>
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    </div>
+                </button>
+
+                <button (click)="signOut()" aria-label="Sign out"
+                    class="w-full bg-white bg-opacity-10 hover:bg-opacity-20 border border-white border-opacity-20 hover:border-opacity-40 text-purple-200 hover:text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 hover:scale-102 backdrop-blur-sm">
+                    <span class="flex items-center justify-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Sign Out
+                    </span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Enhanced sign-in section -->
+        <div *ngIf="!(authService.user$ | async)" class="mb-8 animate-slide-up">
+            <div class="mb-8 p-6 bg-white bg-opacity-5 rounded-xl border border-white border-opacity-10">
+                <h2 class="text-2xl sm:text-3xl font-bold text-purple-100 mb-3">Welcome! 👋</h2>
+                <p class="text-lg text-purple-200 mb-2 font-medium">Ready to do more of what matters to you?</p>
+            </div>
+
+            <button (click)="signInWithGoogle()" aria-label="Sign in with Google"
+                class="group flex items-center justify-center bg-white hover:bg-gray-50 text-gray-800 font-semibold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 w-full max-w-sm mx-auto relative overflow-hidden transform active:scale-95">
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-blue-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                </div>
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google logo"
+                    class="w-6 h-6 mr-3 relative z-10 group-hover:scale-110 transition-transform duration-200">
+                <span class="relative z-10">Continue with Google</span>
+                <svg class="w-5 h-5 ml-2 relative z-10 group-hover:translate-x-1 transition-transform duration-200"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+            </button>
+
+            <!-- Enhanced loading spinner -->
+            <div *ngIf="isLoading" class="mt-6 flex flex-col items-center animate-fade-in">
+                <div class="relative">
+                    <div class="w-8 h-8 border-4 border-purple-300 border-opacity-30 rounded-full animate-spin"></div>
+                    <div
+                        class="absolute top-0 left-0 w-8 h-8 border-4 border-transparent border-t-purple-400 rounded-full animate-spin">
+                    </div>
+                </div>
+                <p class="text-purple-300 text-sm mt-3 animate-pulse">Signing you in...</p>
+            </div>
+        </div>
+    </div>
+
+    <router-outlet></router-outlet>
+</div>
