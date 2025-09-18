@@ -1,27 +1,26 @@
 services:
   client:
     build:
-      context: .
+      context: ./client
       dockerfile: Dockerfile.client
     ports:
       - "4200:4200"
     volumes:
       - ./client:/app
       - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+    command: ["ng", "serve", "--host", "0.0.0.0", "--poll", "2000"]
     depends_on:
       - server
 
   server:
     build:
-      context: .
+      context: ./server
       dockerfile: Dockerfile.server
     ports:
       - "3000:3000"
     volumes:
       - ./server:/app
-      - /app/node_modules
+      - /app/node_modules # Prevents host node_modules from overriding container's
       - ./server/firebase-adminsdk.json:/app/firebase-adminsdk.json
     environment:
       - NODE_ENV=development
