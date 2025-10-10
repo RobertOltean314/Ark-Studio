@@ -1,12 +1,12 @@
-import { Injectable } from '@angular/core';
-import { 
-  Firestore, 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
+import { Injectable, inject } from '@angular/core';
+import {
+  Firestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  getDocs,
   getDoc,
   query,
   where,
@@ -22,8 +22,7 @@ import { Project } from '../models/project.interface';
   providedIn: 'root'
 })
 export class ProjectService {
-  
-  constructor(private firestore: Firestore) {}
+  private firestore = inject(Firestore);
 
   // Projects Collection Methods
   async addProject(project: Omit<Project, 'id'>): Promise<string> {
@@ -45,7 +44,7 @@ export class ProjectService {
     try {
       const docRef = doc(this.firestore, 'projects', id);
       const docSnap = await getDoc(docRef);
-      
+
       if (docSnap.exists()) {
         return { id: docSnap.id, ...docSnap.data() } as Project;
       } else {
@@ -61,18 +60,18 @@ export class ProjectService {
     try {
       const projectsCollection = collection(this.firestore, 'projects');
       const q = query(
-        projectsCollection, 
+        projectsCollection,
         where('userId', '==', userId),
         orderBy('updatedAt', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(q);
       const projects: Project[] = [];
-      
+
       querySnapshot.forEach((doc) => {
         projects.push({ id: doc.id, ...doc.data() } as Project);
       });
-      
+
       return projects;
     } catch (error) {
       console.error('Error getting user projects:', error);
@@ -85,7 +84,7 @@ export class ProjectService {
     return new Observable(observer => {
       const projectsCollection = collection(this.firestore, 'projects');
       const q = query(
-        projectsCollection, 
+        projectsCollection,
         where('userId', '==', userId),
         orderBy('updatedAt', 'desc')
       );

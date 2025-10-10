@@ -1,9 +1,10 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { AppComponent } from './app/app.component';
-import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideFirebaseApp, initializeApp, getApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
-import { provideFirestore, getFirestore, enableMultiTabIndexedDbPersistence } from '@angular/fire/firestore';
+import { provideFirestore, initializeFirestore } from '@angular/fire/firestore';
+import { persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { environment } from './environments/environment';
 import { routes } from './app/app.routes';
 import { provideHttpClient } from '@angular/common/http';
@@ -18,16 +19,18 @@ bootstrapApplication(AppComponent, {
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideFirestore(() => {
-      const firestore = getFirestore();
-      // Enable offline persistence (optional)
-      enableMultiTabIndexedDbPersistence(firestore).catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code === 'unimplemented') {
-          console.warn('The current browser does not support all of the features required to enable persistence');
-        }
-      });
-      return firestore;
+      try {
+        const app = getApp();
+        return initializeFirestore(app, {
+          localCache: persistentLocalCache({
+            tabManager: persistentMultipleTabManager()
+          })
+        });
+      } catch (err: any) {
+        console.warn('Failed to initialize Firestore with persistence:', err);
+        const app = getApp();
+        return initializeFirestore(app, {});
+      }
     })
   ]
 }).catch(err => console.error(err));

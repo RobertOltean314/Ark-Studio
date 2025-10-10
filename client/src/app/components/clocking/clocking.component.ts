@@ -16,9 +16,9 @@ export class ClockingComponent implements OnInit, OnDestroy {
   currentEntry: TimeEntry | null = null;
   currentTime = new Date();
   sessionTime = 0; // in seconds
+  totalWorkTimeToday = 0; // in seconds - total across all sessions today
   loading = false;
 
-  // History/Pagination
   timeEntries: TimeEntry[] = [];
   loadingHistory = false;
   currentPage = 1;
@@ -39,6 +39,7 @@ export class ClockingComponent implements OnInit, OnDestroy {
     this.startClock();
     this.loadTodayEntry();
     this.loadHistory();
+    this.loadTotalWorkTimeToday();
   }
 
   ngOnDestroy() {
@@ -56,28 +57,52 @@ export class ClockingComponent implements OnInit, OnDestroy {
   startClock() {
     this.clockSubscription = interval(1000).subscribe(() => {
       this.currentTime = new Date();
-      if (this.currentEntry && this.currentEntry.status === 'clocked-in') {
+      if (this.currentEntry && (this.currentEntry.status === 'clocked-in' || this.currentEntry.status === 'on-break')) {
         this.sessionTime = this.timeTrackingService.calculateCurrentSessionTime(this.currentEntry);
       }
+      // Update total work time every second to include current session
+      this.updateTotalWorkTimeToday();
     });
+  }
+
+  async loadTotalWorkTimeToday() {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    try {
+      this.totalWorkTimeToday = await this.timeTrackingService.getTotalWorkTimeToday(userId);
+    } catch (error) {
+      console.error('Error loading total work time today:', error);
+    }
+  }
+
+  async updateTotalWorkTimeToday() {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    try {
+      this.totalWorkTimeToday = await this.timeTrackingService.getTotalWorkTimeToday(userId);
+    } catch (error) {
+      console.error('Error updating total work time today:', error);
+    }
   }
 
   loadTodayEntry() {
     const userId = this.authService.getUserId();
     if (!userId) return;
 
-    this.entrySubscription = this.timeTrackingService.getTodayEntryRealtime(userId)
+    this.entrySubscription = this.timeTrackingService.getActiveEntryRealtime(userId)
       .subscribe({
         next: (entry) => {
           this.currentEntry = entry;
-          if (entry && entry.status === 'clocked-in') {
+          if (entry && (entry.status === 'clocked-in' || entry.status === 'on-break')) {
             this.sessionTime = this.timeTrackingService.calculateCurrentSessionTime(entry);
           } else {
             this.sessionTime = 0;
           }
         },
         error: (error) => {
-          console.error('Error loading today entry:', error);
+          console.error('Error loading active entry:', error);
         }
       });
   }
@@ -127,7 +152,8 @@ export class ClockingComponent implements OnInit, OnDestroy {
     this.loading = true;
     try {
       await this.timeTrackingService.clockIn(userId);
-      this.loadHistory(); // Refresh history
+      this.loadHistory();
+      this.loadTotalWorkTimeToday();
     } catch (error) {
       console.error('Error clocking in:', error);
       alert(error instanceof Error ? error.message : 'Error clocking in');
@@ -180,6 +206,7 @@ export class ClockingComponent implements OnInit, OnDestroy {
     try {
       await this.timeTrackingService.clockOut(userId);
       this.loadHistory(); // Refresh history
+      this.loadTotalWorkTimeToday();
     } catch (error) {
       console.error('Error clocking out:', error);
       alert(error instanceof Error ? error.message : 'Error clocking out');
@@ -210,6 +237,37 @@ export class ClockingComponent implements OnInit, OnDestroy {
 
   formatMinutes(minutes: number): string {
     return this.timeTrackingService.formatMinutes(minutes);
+  }
+
+  // Format seconds directly (for new time entries stored in seconds)
+  formatSeconds(seconds: number): string {
+    return this.timeTrackingService.formatDuration(seconds);
+  }
+
+  // Format work time - handles both old (minutes) and new (seconds) format
+  formatWorkTime(workTime: number): string {
+    // If the work time is a large number (> 86400), it's likely in seconds
+    // If it's a small number (< 1440), it's likely in minutes (old format)
+    if (workTime > 1440) {
+      // Likely seconds
+      return this.timeTrackingService.formatDuration(workTime);
+    } else {
+      // Likely minutes (old format)
+      return this.timeTrackingService.formatMinutes(workTime);
+    }
+  }
+
+  // Format break time - handles both old (minutes) and new (seconds) format
+  formatBreakTime(breakTime: number): string {
+    // If the break time is a large number (> 1440), it's likely in seconds
+    // If it's a small number (< 1440), it's likely in minutes (old format)
+    if (breakTime > 1440) {
+      // Likely seconds
+      return this.timeTrackingService.formatDuration(breakTime);
+    } else {
+      // Likely minutes (old format)
+      return this.timeTrackingService.formatMinutes(breakTime);
+    }
   }
 
   toDate(timestamp: any): Date {

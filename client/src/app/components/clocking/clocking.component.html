@@ -35,13 +35,25 @@
                             [class]="getStatusColor(currentEntry.status)">
                             {{ getStatusText(currentEntry.status) }}
                         </span>
-                        <div *ngIf="currentEntry.status === 'clocked-in'" class="text-sm text-gray-600">
+                        <div *ngIf="currentEntry.status === 'clocked-in' || currentEntry.status === 'on-break'" class="text-sm text-gray-600">
                             Session Time: <span class="font-mono font-bold">{{ formatDuration(sessionTime) }}</span>
                         </div>
                     </div>
 
-                    <div *ngIf="currentEntry.clockInTime" class="text-sm text-gray-500">
-                        Clocked in at: {{ toDate(currentEntry.clockInTime) | date:'short' }}
+                    <div class="flex justify-center space-x-6 text-sm text-gray-600 mb-2">
+                        <div *ngIf="currentEntry.clockInTime">
+                            Clocked in at: {{ toDate(currentEntry.clockInTime) | date:'short' }}
+                        </div>
+                        <div>
+                            Total Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status for no current entry but show total time -->
+                <div *ngIf="!currentEntry && totalWorkTimeToday > 0" class="text-center mb-6">
+                    <div class="text-sm text-gray-600">
+                        Total Work Time Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday) }}</span>
                     </div>
                 </div>
 
@@ -162,13 +174,13 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <span *ngIf="entry.totalWorkTime > 0">
-                                        {{ formatMinutes(entry.totalWorkTime) }}
+                                        {{ formatWorkTime(entry.totalWorkTime) }}
                                     </span>
                                     <span *ngIf="entry.totalWorkTime === 0" class="text-gray-400">-</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <span *ngIf="entry.totalBreakTime > 0">
-                                        {{ formatMinutes(entry.totalBreakTime) }}
+                                        {{ formatBreakTime(entry.totalBreakTime) }}
                                     </span>
                                     <span *ngIf="entry.totalBreakTime === 0" class="text-gray-400">-</span>
                                 </td>

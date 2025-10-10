@@ -6,8 +6,8 @@ export interface TimeEntry {
     clockOutTime?: Date | any; // Firestore Timestamp
     breakStart?: Date | any; // Firestore Timestamp
     breakEnd?: Date | any; // Firestore Timestamp
-    totalBreakTime: number; // in minutes
-    totalWorkTime: number; // in minutes
+    totalBreakTime: number; // in seconds
+    totalWorkTime: number; // in seconds
     status: 'clocked-in' | 'on-break' | 'clocked-out';
     createdAt: Date | any;
     updatedAt: Date | any;
@@ -25,8 +25,8 @@ export interface WorkSession {
             end?: Date | any;
         }[];
     }[];
-    totalWorkTime: number; // in minutes
-    totalBreakTime: number; // in minutes
+    totalWorkTime: number; // in seconds
+    totalBreakTime: number; // in seconds
     status: 'clocked-in' | 'on-break' | 'clocked-out';
     createdAt: Date | any;
     updatedAt: Date | any;

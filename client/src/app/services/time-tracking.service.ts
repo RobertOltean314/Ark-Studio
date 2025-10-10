@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
 import {
     Firestore,
     collection,
@@ -25,26 +25,28 @@ import { TimeEntry, WorkSession } from '../models/time-entry.interface';
     providedIn: 'root'
 })
 export class TimeTrackingService {
-
-    constructor(private firestore: Firestore) { }
+    private firestore = inject(Firestore);
+    private injector = inject(Injector);
 
     // Get today's date in YYYY-MM-DD format
     private getTodayString(): string {
         return new Date().toISOString().split('T')[0];
     }
 
-    // Get or create today's time entry for user
+    // Get or create today's time entry for user (gets the first entry for today)
     async getTodayEntry(userId: string): Promise<TimeEntry | null> {
         try {
             const today = this.getTodayString();
-            const entriesCollection = collection(this.firestore, 'timeEntries');
-            const q = query(
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            const q = runInInjectionContext(this.injector, () => query(
                 entriesCollection,
                 where('userId', '==', userId),
-                where('date', '==', today)
-            );
+                where('date', '==', today),
+                orderBy('createdAt', 'desc'),
+                limit(1)
+            ));
 
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await runInInjectionContext(this.injector, () => getDocs(q));
 
             if (!querySnapshot.empty) {
                 const doc = querySnapshot.docs[0];
@@ -58,38 +60,84 @@ export class TimeTrackingService {
         }
     }
 
-    // Clock in
+    // Get currently active entry (clocked-in or on-break status)
+    async getActiveEntry(userId: string): Promise<TimeEntry | null> {
+        try {
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            const q = runInInjectionContext(this.injector, () => query(
+                entriesCollection,
+                where('userId', '==', userId),
+                where('status', 'in', ['clocked-in', 'on-break'])
+            ));
+
+            const querySnapshot = await runInInjectionContext(this.injector, () => getDocs(q));
+
+            if (!querySnapshot.empty) {
+                const doc = querySnapshot.docs[0];
+                return { id: doc.id, ...doc.data() } as TimeEntry;
+            }
+
+            return null;
+        } catch (error) {
+            console.error('Error getting active entry:', error);
+            throw error;
+        }
+    }
+
+    // Get all entries for today for a user
+    async getAllTodayEntries(userId: string): Promise<TimeEntry[]> {
+        try {
+            const today = this.getTodayString();
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            const q = runInInjectionContext(this.injector, () => query(
+                entriesCollection,
+                where('userId', '==', userId),
+                where('date', '==', today)
+            ));
+
+            const querySnapshot = await runInInjectionContext(this.injector, () => getDocs(q));
+            const entries: TimeEntry[] = [];
+
+            querySnapshot.forEach((doc) => {
+                entries.push({ id: doc.id, ...doc.data() } as TimeEntry);
+            });
+
+            // Sort entries by createdAt on the client side (ascending order for chronological display)
+            entries.sort((a, b) => {
+                const dateA = this.toDate(a.createdAt);
+                const dateB = this.toDate(b.createdAt);
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            return entries;
+        } catch (error) {
+            console.error('Error getting all today entries:', error);
+            throw error;
+        }
+    }
+
+    // Clock in - Always creates a new session entry
     async clockIn(userId: string): Promise<void> {
         try {
             const today = this.getTodayString();
-            const existingEntry = await this.getTodayEntry(userId);
+            const activeEntry = await this.getActiveEntry(userId);
 
-            if (existingEntry && existingEntry.status === 'clocked-in') {
-                throw new Error('Already clocked in');
+            if (activeEntry) {
+                throw new Error('Already clocked in. Please clock out first.');
             }
 
-            if (existingEntry) {
-                // Update existing entry
-                const docRef = doc(this.firestore, 'timeEntries', existingEntry.id!);
-                await updateDoc(docRef, {
-                    clockInTime: new Date(),
-                    status: 'clocked-in',
-                    updatedAt: new Date()
-                });
-            } else {
-                // Create new entry
-                const entriesCollection = collection(this.firestore, 'timeEntries');
-                await addDoc(entriesCollection, {
-                    userId,
-                    date: today,
-                    clockInTime: new Date(),
-                    status: 'clocked-in',
-                    totalBreakTime: 0,
-                    totalWorkTime: 0,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                });
-            }
+            // Always create new entry for each clock-in session
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            await runInInjectionContext(this.injector, () => addDoc(entriesCollection, {
+                userId,
+                date: today,
+                clockInTime: new Date(),
+                status: 'clocked-in',
+                totalBreakTime: 0, // in seconds
+                totalWorkTime: 0,  // in seconds
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }));
         } catch (error) {
             console.error('Error clocking in:', error);
             throw error;
@@ -99,17 +147,17 @@ export class TimeTrackingService {
     // Start break
     async startBreak(userId: string): Promise<void> {
         try {
-            const entry = await this.getTodayEntry(userId);
+            const entry = await this.getActiveEntry(userId);
             if (!entry || entry.status !== 'clocked-in') {
                 throw new Error('Must be clocked in to start break');
             }
 
-            const docRef = doc(this.firestore, 'timeEntries', entry.id!);
-            await updateDoc(docRef, {
+            const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entry.id!));
+            await runInInjectionContext(this.injector, () => updateDoc(docRef, {
                 breakStart: new Date(),
                 status: 'on-break',
                 updatedAt: new Date()
-            });
+            }));
         } catch (error) {
             console.error('Error starting break:', error);
             throw error;
@@ -119,22 +167,22 @@ export class TimeTrackingService {
     // End break
     async endBreak(userId: string): Promise<void> {
         try {
-            const entry = await this.getTodayEntry(userId);
+            const entry = await this.getActiveEntry(userId);
             if (!entry || entry.status !== 'on-break') {
                 throw new Error('Must be on break to end break');
             }
 
             const breakStart = entry.breakStart;
             const breakEnd = new Date();
-            const breakDuration = Math.floor((breakEnd.getTime() - this.toDate(breakStart).getTime()) / (1000 * 60)); // minutes
+            const breakDuration = Math.floor((breakEnd.getTime() - this.toDate(breakStart).getTime()) / 1000); // seconds
 
-            const docRef = doc(this.firestore, 'timeEntries', entry.id!);
-            await updateDoc(docRef, {
+            const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entry.id!));
+            await runInInjectionContext(this.injector, () => updateDoc(docRef, {
                 breakEnd: breakEnd,
                 totalBreakTime: (entry.totalBreakTime || 0) + breakDuration,
                 status: 'clocked-in',
                 updatedAt: new Date()
-            });
+            }));
         } catch (error) {
             console.error('Error ending break:', error);
             throw error;
@@ -144,7 +192,7 @@ export class TimeTrackingService {
     // Clock out
     async clockOut(userId: string): Promise<void> {
         try {
-            const entry = await this.getTodayEntry(userId);
+            const entry = await this.getActiveEntry(userId);
             if (!entry || entry.status === 'clocked-out') {
                 throw new Error('Must be clocked in to clock out');
             }
@@ -153,7 +201,7 @@ export class TimeTrackingService {
             if (entry.status === 'on-break' && entry.breakStart) {
                 await this.endBreak(userId);
                 // Get updated entry
-                const updatedEntry = await this.getTodayEntry(userId);
+                const updatedEntry = await this.getActiveEntry(userId);
                 if (updatedEntry) {
                     entry.totalBreakTime = updatedEntry.totalBreakTime;
                 }
@@ -161,16 +209,16 @@ export class TimeTrackingService {
 
             const clockOutTime = new Date();
             const clockInTime = this.toDate(entry.clockInTime!);
-            const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / (1000 * 60)); // minutes
+            const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 1000); // seconds
             const workTime = totalTime - (entry.totalBreakTime || 0);
 
-            const docRef = doc(this.firestore, 'timeEntries', entry.id!);
-            await updateDoc(docRef, {
+            const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entry.id!));
+            await runInInjectionContext(this.injector, () => updateDoc(docRef, {
                 clockOutTime: clockOutTime,
-                totalWorkTime: workTime,
+                totalWorkTime: Math.max(0, workTime),
                 status: 'clocked-out',
                 updatedAt: new Date()
-            });
+            }));
         } catch (error) {
             console.error('Error clocking out:', error);
             throw error;
@@ -180,25 +228,25 @@ export class TimeTrackingService {
     // Get user's time entries with pagination
     async getUserTimeEntries(userId: string, pageLimit: number = 10, lastDoc?: any): Promise<{ entries: TimeEntry[], lastDoc: any }> {
         try {
-            const entriesCollection = collection(this.firestore, 'timeEntries');
-            let q = query(
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            let q = runInInjectionContext(this.injector, () => query(
                 entriesCollection,
                 where('userId', '==', userId),
                 orderBy('date', 'desc'),
                 limit(pageLimit)
-            );
+            ));
 
             if (lastDoc) {
-                q = query(
+                q = runInInjectionContext(this.injector, () => query(
                     entriesCollection,
                     where('userId', '==', userId),
                     orderBy('date', 'desc'),
                     startAfter(lastDoc),
                     limit(pageLimit)
-                );
+                ));
             }
 
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await runInInjectionContext(this.injector, () => getDocs(q));
             const entries: TimeEntry[] = [];
 
             querySnapshot.forEach((doc) => {
@@ -214,27 +262,56 @@ export class TimeTrackingService {
         }
     }
 
-    // Real-time listener for today's entry
-    getTodayEntryRealtime(userId: string): Observable<TimeEntry | null> {
+    // Real-time listener for active entry
+    getActiveEntryRealtime(userId: string): Observable<TimeEntry | null> {
         return new Observable(observer => {
-            const today = this.getTodayString();
-            const entriesCollection = collection(this.firestore, 'timeEntries');
-            const q = query(
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            const q = runInInjectionContext(this.injector, () => query(
                 entriesCollection,
                 where('userId', '==', userId),
-                where('date', '==', today)
+                where('status', 'in', ['clocked-in', 'on-break'])
+            ));
+
+            const unsubscribe = runInInjectionContext(this.injector, () =>
+                onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+                    if (!querySnapshot.empty) {
+                        const doc = querySnapshot.docs[0];
+                        observer.next({ id: doc.id, ...doc.data() } as TimeEntry);
+                    } else {
+                        observer.next(null);
+                    }
+                }, (error) => {
+                    observer.error(error);
+                })
             );
 
-            const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
-                if (!querySnapshot.empty) {
-                    const doc = querySnapshot.docs[0];
-                    observer.next({ id: doc.id, ...doc.data() } as TimeEntry);
-                } else {
-                    observer.next(null);
-                }
-            }, (error) => {
-                observer.error(error);
-            });
+            return () => unsubscribe();
+        });
+    }
+
+    // Real-time listener for today's entries (all sessions for today)
+    getTodayEntriesRealtime(userId: string): Observable<TimeEntry[]> {
+        return new Observable(observer => {
+            const today = this.getTodayString();
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            const q = runInInjectionContext(this.injector, () => query(
+                entriesCollection,
+                where('userId', '==', userId),
+                where('date', '==', today),
+                orderBy('createdAt', 'asc')
+            ));
+
+            const unsubscribe = runInInjectionContext(this.injector, () =>
+                onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+                    const entries: TimeEntry[] = [];
+                    querySnapshot.forEach((doc) => {
+                        entries.push({ id: doc.id, ...doc.data() } as TimeEntry);
+                    });
+                    observer.next(entries);
+                }, (error) => {
+                    observer.error(error);
+                })
+            );
 
             return () => unsubscribe();
         });
@@ -266,14 +343,23 @@ export class TimeTrackingService {
             totalTime -= currentBreakTime;
         }
 
-        // Subtract previous break time
-        totalTime -= (entry.totalBreakTime || 0) * 60; // convert minutes to seconds
+        // Subtract previous break time (totalBreakTime is now in seconds)
+        totalTime -= (entry.totalBreakTime || 0);
 
         return Math.max(0, totalTime);
     }
 
-    // Format time duration
+    // Format time duration in HH:MM:SS format
     formatDuration(seconds: number): string {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Format time duration in readable format (e.g., "2h 30m 45s")
+    formatDurationReadable(seconds: number): string {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = seconds % 60;
@@ -287,15 +373,31 @@ export class TimeTrackingService {
         }
     }
 
-    // Format minutes to hours and minutes
+    // Format minutes to hours and minutes (legacy support)
     formatMinutes(minutes: number): string {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
+        const seconds = minutes * 60;
+        return this.formatDuration(seconds);
+    }
 
-        if (hours > 0) {
-            return `${hours}h ${mins}m`;
-        } else {
-            return `${mins}m`;
+    // Calculate total work time for all sessions today
+    async getTotalWorkTimeToday(userId: string): Promise<number> {
+        try {
+            const entries = await this.getAllTodayEntries(userId);
+            let totalWorkTime = 0;
+
+            for (const entry of entries) {
+                if (entry.status === 'clocked-out' && entry.totalWorkTime) {
+                    totalWorkTime += entry.totalWorkTime;
+                } else if (entry.status === 'clocked-in' || entry.status === 'on-break') {
+                    // Calculate current session time
+                    totalWorkTime += this.calculateCurrentSessionTime(entry);
+                }
+            }
+
+            return totalWorkTime;
+        } catch (error) {
+            console.error('Error calculating total work time today:', error);
+            return 0;
         }
     }
 }
