@@ -19,17 +19,19 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   loading = true;
   isProcessing = false;
   showNewProjectForm = false;
-  
+  showUpdateModal = false;
+
   // Form data
   newProject: Partial<Project> = {};
-  
+  editingProject: Partial<Project> = {};
+
   private projectsSubscription?: Subscription;
 
   constructor(
     private projectService: ProjectService,
     private fileUploadService: FileUploadService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadProjects();
@@ -43,9 +45,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   loadProjects() {
     const userId = this.authService.getUserId();
-    console.log('User ID:', userId);
-    console.log('User logged in:', this.authService.isLoggedIn());
-    
+
     if (!userId) {
       console.error('User not authenticated');
       this.loading = false;
@@ -56,7 +56,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.projectsSubscription = this.projectService.getUserProjectsRealtime(userId)
       .subscribe({
         next: (projects) => {
-          console.log('Loaded projects:', projects);
           this.projects = projects;
           this.loading = false;
         },
@@ -85,7 +84,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
       // Extract only the metadata we need (filename and duration)
       const videoMetadata = await this.fileUploadService.extractVideoMetadata(file);
-      
+
       // Set up the new project with extracted metadata
       this.newProject = {
         fileName: videoMetadata.fileName,
@@ -93,10 +92,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         name: videoMetadata.fileName.replace(/\.[^/.]+$/, ''), // Remove file extension for project name
         status: 'unpaid'
       };
-      
+
       this.isProcessing = false;
       this.showNewProjectForm = true;
-      
+
     } catch (error) {
       console.error('Error processing video:', error);
       this.isProcessing = false;
@@ -106,11 +105,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
   async createProject() {
     const userId = this.authService.getUserId();
-    console.log('Creating project for user:', userId);
-    console.log('Project data:', this.newProject);
-    
+
     if (!userId || !this.newProject.fileName || !this.newProject.duration) {
-      console.error('Missing required data:', {userId, fileName: this.newProject.fileName, duration: this.newProject.duration});
       return;
     }
 
@@ -125,11 +121,8 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       userId: userId
     };
 
-    console.log('Final project object:', project);
-
     try {
-      const projectId = await this.projectService.addProject(project);
-      console.log('Project created with ID:', projectId);
+      await this.projectService.addProject(project);
       this.resetForm();
     } catch (error) {
       console.error('Error creating project:', error);
@@ -142,23 +135,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     this.showNewProjectForm = false;
   }
 
-  toggleProjectStatus(project: Project) {
-    if (!project.id) return;
-    const newStatus = project.status === 'paid' ? 'unpaid' : 'paid';
-    this.updateProjectField(project.id, { status: newStatus });
-  }
 
-  async updateProjectField(projectId: string, updates: Partial<Project>) {
-    try {
-      await this.projectService.updateProject(projectId, updates);
-    } catch (error) {
-      console.error('Error updating project:', error);
-    }
-  }
 
   async deleteProject(projectId: string) {
     if (!confirm('Are you sure you want to delete this project?')) return;
-    
+
     try {
       await this.projectService.deleteProject(projectId);
     } catch (error) {
@@ -179,5 +160,36 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       return timestamp;
     }
     return new Date(timestamp);
+  }
+
+  // Update modal methods
+  openUpdateModal(project: Project) {
+    this.editingProject = { ...project };
+    this.showUpdateModal = true;
+  }
+
+  closeUpdateModal() {
+    this.editingProject = {};
+    this.showUpdateModal = false;
+  }
+
+  async updateProject() {
+    if (!this.editingProject.id) return;
+
+    try {
+      const updates: Partial<Project> = {
+        name: this.editingProject.name,
+        fileName: this.editingProject.fileName,
+        duration: this.editingProject.duration,
+        description: this.editingProject.description,
+        status: this.editingProject.status
+      };
+
+      await this.projectService.updateProject(this.editingProject.id, updates);
+      this.closeUpdateModal();
+    } catch (error) {
+      console.error('Error updating project:', error);
+      alert('Error updating project. Please try again.');
+    }
   }
 }
