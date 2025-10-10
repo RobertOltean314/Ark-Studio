@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { QuoteService, Quote } from './quote.service';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Router } from '@angular/router';
 
@@ -33,9 +32,9 @@ export class WelcomeComponent implements OnInit {
   title = 'Ark Studio';
   isLoading = false;
 
-  constructor(public authService: AuthService, private router: Router) {}
+  constructor(public authService: AuthService, private router: Router) { }
 
-  ngOnInit() {}
+  ngOnInit() { }
 
   isUserLoggedIn(): boolean {
     return this.authService.isLoggedIn();

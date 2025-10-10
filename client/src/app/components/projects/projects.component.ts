@@ -1,10 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProjectService } from '../services/project.service';
-import { FileUploadService } from '../services/file-upload.service';
-import { AuthService } from '../auth/auth.service';
-import { Project } from '../models/project.interface';
+import { ProjectService } from '../../services/project.service';
+import { FileUploadService } from '../../services/file-upload.service';
+import { AuthService } from '../../auth/auth.service';
+import { Project } from '../../models/project.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
