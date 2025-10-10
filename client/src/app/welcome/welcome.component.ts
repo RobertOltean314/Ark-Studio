@@ -55,7 +55,7 @@ export class WelcomeComponent implements OnInit {
   }
 
   goToProjects() {
-    window.location.href = '/projects';
+    this.router.navigate(['/projects']);
   }
 
   signOut() {
