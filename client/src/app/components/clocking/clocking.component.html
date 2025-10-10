@@ -1,7 +1,6 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        <!-- Header -->
         <div class="text-center mb-12">
             <div
                 class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full mb-6">
@@ -14,11 +13,9 @@
             <p class="text-xl text-gray-600 max-w-2xl mx-auto">Track your work hours and manage your time</p>
         </div>
 
-        <!-- Current Time & Status Card -->
         <div class="max-w-4xl mx-auto mb-8">
             <div class="bg-white rounded-2xl shadow-xl border border-blue-100 p-8">
 
-                <!-- Digital Clock -->
                 <div class="text-center mb-8">
                     <div class="text-6xl font-mono font-bold text-gray-800 mb-2">
                         {{ formatTime(currentTime) }}
@@ -28,14 +25,14 @@
                     </div>
                 </div>
 
-                <!-- Current Status -->
                 <div *ngIf="currentEntry" class="text-center mb-6">
                     <div class="inline-flex items-center space-x-3 mb-4">
                         <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full"
                             [class]="getStatusColor(currentEntry.status)">
                             {{ getStatusText(currentEntry.status) }}
                         </span>
-                        <div *ngIf="currentEntry.status === 'clocked-in' || currentEntry.status === 'on-break'" class="text-sm text-gray-600">
+                        <div *ngIf="currentEntry.status === 'clocked-in' || currentEntry.status === 'on-break'"
+                            class="text-sm text-gray-600">
                             Session Time: <span class="font-mono font-bold">{{ formatDuration(sessionTime) }}</span>
                         </div>
                     </div>
@@ -45,21 +42,20 @@
                             Clocked in at: {{ toDate(currentEntry.clockInTime) | date:'short' }}
                         </div>
                         <div>
-                            Total Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday) }}</span>
+                            Total Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday)
+                                }}</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Status for no current entry but show total time -->
                 <div *ngIf="!currentEntry && totalWorkTimeToday > 0" class="text-center mb-6">
                     <div class="text-sm text-gray-600">
-                        Total Work Time Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday) }}</span>
+                        Total Work Time Today: <span class="font-mono font-bold">{{ formatDuration(totalWorkTimeToday)
+                            }}</span>
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex justify-center space-x-4">
-                    <!-- Clock In Button -->
                     <button *ngIf="!currentEntry || currentEntry.status === 'clocked-out'" (click)="clockIn()"
                         [disabled]="loading"
                         class="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
@@ -70,7 +66,6 @@
                         <span>{{ loading ? 'Clocking In...' : 'Clock In' }}</span>
                     </button>
 
-                    <!-- Break Buttons -->
                     <button *ngIf="currentEntry?.status === 'clocked-in'" (click)="startBreak()" [disabled]="loading"
                         class="bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,7 +84,6 @@
                         <span>{{ loading ? 'Ending Break...' : 'End Break' }}</span>
                     </button>
 
-                    <!-- Clock Out Button -->
                     <button *ngIf="currentEntry?.status === 'clocked-in' || currentEntry?.status === 'on-break'"
                         (click)="clockOut()" [disabled]="loading"
                         class="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
@@ -103,7 +97,6 @@
             </div>
         </div>
 
-        <!-- Time History -->
         <div class="max-w-6xl mx-auto">
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6 border-b border-gray-200">
@@ -111,20 +104,17 @@
                     <p class="text-gray-600 mt-1">Your recent time tracking entries</p>
                 </div>
 
-                <!-- Loading State -->
                 <div *ngIf="loadingHistory && timeEntries.length === 0" class="p-8 text-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
                     <p class="text-gray-600">Loading history...</p>
                 </div>
 
-                <!-- Empty State -->
                 <div *ngIf="!loadingHistory && timeEntries.length === 0" class="p-8 text-center">
                     <div class="text-gray-400 text-4xl mb-4">⏰</div>
                     <h3 class="text-lg font-semibold text-gray-600 mb-2">No time entries yet</h3>
                     <p class="text-gray-500">Start tracking your time by clocking in!</p>
                 </div>
 
-                <!-- History Table -->
                 <div *ngIf="timeEntries.length > 0" class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -195,7 +185,6 @@
                     </table>
                 </div>
 
-                <!-- Load More Button -->
                 <div *ngIf="hasMorePages" class="p-4 border-t border-gray-200 text-center">
                     <button (click)="loadMoreEntries()" [disabled]="loadingHistory"
                         class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors">

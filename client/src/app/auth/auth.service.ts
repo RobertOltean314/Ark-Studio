@@ -11,7 +11,7 @@ export class AuthService {
 
   constructor() {
     this.user$ = authState(this.auth).pipe(
-      shareReplay(1) // Cache the latest user state for new subscribers
+      shareReplay(1)
     );
   }
 

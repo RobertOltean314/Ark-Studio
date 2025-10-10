@@ -1,13 +1,13 @@
 export interface TimeEntry {
     id?: string;
     userId: string;
-    date: string; // YYYY-MM-DD format
-    clockInTime?: Date | any; // Firestore Timestamp
-    clockOutTime?: Date | any; // Firestore Timestamp
-    breakStart?: Date | any; // Firestore Timestamp
-    breakEnd?: Date | any; // Firestore Timestamp
-    totalBreakTime: number; // in seconds
-    totalWorkTime: number; // in seconds
+    date: string;
+    clockInTime?: Date | any;
+    clockOutTime?: Date | any;
+    breakStart?: Date | any;
+    breakEnd?: Date | any;
+    totalBreakTime: number;
+    totalWorkTime: number;
     status: 'clocked-in' | 'on-break' | 'clocked-out';
     createdAt: Date | any;
     updatedAt: Date | any;
@@ -25,8 +25,8 @@ export interface WorkSession {
             end?: Date | any;
         }[];
     }[];
-    totalWorkTime: number; // in seconds
-    totalBreakTime: number; // in seconds
+    totalWorkTime: number;
+    totalBreakTime: number;
     status: 'clocked-in' | 'on-break' | 'clocked-out';
     createdAt: Date | any;
     updatedAt: Date | any;

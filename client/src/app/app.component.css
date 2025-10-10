@@ -9,5 +9,5 @@
 }
 
 .main-content.with-navbar {
-  padding-top: 0; /* Navbar is sticky, no need for padding */
+  padding-top: 0;
 }

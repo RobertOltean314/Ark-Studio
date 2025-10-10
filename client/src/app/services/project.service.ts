@@ -24,7 +24,6 @@ import { Project } from '../models/project.interface';
 export class ProjectService {
   private firestore = inject(Firestore);
 
-  // Projects Collection Methods
   async addProject(project: Omit<Project, 'id'>): Promise<string> {
     try {
       const projectsCollection = collection(this.firestore, 'projects');
@@ -79,7 +78,6 @@ export class ProjectService {
     }
   }
 
-  // Real-time listener for user projects
   getUserProjectsRealtime(userId: string): Observable<Project[]> {
     return new Observable(observer => {
       const projectsCollection = collection(this.firestore, 'projects');
@@ -99,7 +97,6 @@ export class ProjectService {
         observer.error(error);
       });
 
-      // Return cleanup function
       return () => unsubscribe();
     });
   }

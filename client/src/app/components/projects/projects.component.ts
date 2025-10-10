@@ -21,7 +21,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   showNewProjectForm = false;
   showUpdateModal = false;
 
-  // Form data
   newProject: Partial<Project> = {};
   editingProject: Partial<Project> = {};
 
@@ -52,7 +51,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Using real-time listener
     this.projectsSubscription = this.projectService.getUserProjectsRealtime(userId)
       .subscribe({
         next: (projects) => {
@@ -82,14 +80,12 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     try {
       this.isProcessing = true;
 
-      // Extract only the metadata we need (filename and duration)
       const videoMetadata = await this.fileUploadService.extractVideoMetadata(file);
 
-      // Set up the new project with extracted metadata
       this.newProject = {
         fileName: videoMetadata.fileName,
         duration: videoMetadata.duration,
-        name: videoMetadata.fileName.replace(/\.[^/.]+$/, ''), // Remove file extension for project name
+        name: videoMetadata.fileName.replace(/\.[^/.]+$/, ''),
         status: 'unpaid'
       };
 
@@ -151,7 +147,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return this.fileUploadService.formatDuration(seconds);
   }
 
-  // Convert Firestore Timestamp to JavaScript Date
   toDate(timestamp: any): Date {
     if (timestamp && timestamp.toDate) {
       return timestamp.toDate();
@@ -162,7 +157,6 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     return new Date(timestamp);
   }
 
-  // Update modal methods
   openUpdateModal(project: Project) {
     this.editingProject = { ...project };
     this.showUpdateModal = true;

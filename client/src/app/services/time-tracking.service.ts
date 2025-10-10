@@ -19,7 +19,7 @@ import {
     Timestamp
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
-import { TimeEntry, WorkSession } from '../models/time-entry.interface';
+import { TimeEntry, } from '../models/time-entry.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -28,12 +28,10 @@ export class TimeTrackingService {
     private firestore = inject(Firestore);
     private injector = inject(Injector);
 
-    // Get today's date in YYYY-MM-DD format
     private getTodayString(): string {
         return new Date().toISOString().split('T')[0];
     }
 
-    // Get or create today's time entry for user (gets the first entry for today)
     async getTodayEntry(userId: string): Promise<TimeEntry | null> {
         try {
             const today = this.getTodayString();
@@ -60,7 +58,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Get currently active entry (clocked-in or on-break status)
     async getActiveEntry(userId: string): Promise<TimeEntry | null> {
         try {
             const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
@@ -84,7 +81,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Get all entries for today for a user
     async getAllTodayEntries(userId: string): Promise<TimeEntry[]> {
         try {
             const today = this.getTodayString();
@@ -102,7 +98,6 @@ export class TimeTrackingService {
                 entries.push({ id: doc.id, ...doc.data() } as TimeEntry);
             });
 
-            // Sort entries by createdAt on the client side (ascending order for chronological display)
             entries.sort((a, b) => {
                 const dateA = this.toDate(a.createdAt);
                 const dateB = this.toDate(b.createdAt);
@@ -116,7 +111,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Clock in - Always creates a new session entry
     async clockIn(userId: string): Promise<void> {
         try {
             const today = this.getTodayString();
@@ -126,15 +120,14 @@ export class TimeTrackingService {
                 throw new Error('Already clocked in. Please clock out first.');
             }
 
-            // Always create new entry for each clock-in session
             const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
             await runInInjectionContext(this.injector, () => addDoc(entriesCollection, {
                 userId,
                 date: today,
                 clockInTime: new Date(),
                 status: 'clocked-in',
-                totalBreakTime: 0, // in seconds
-                totalWorkTime: 0,  // in seconds
+                totalBreakTime: 0,
+                totalWorkTime: 0,
                 createdAt: new Date(),
                 updatedAt: new Date()
             }));
@@ -144,7 +137,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Start break
     async startBreak(userId: string): Promise<void> {
         try {
             const entry = await this.getActiveEntry(userId);
@@ -164,7 +156,6 @@ export class TimeTrackingService {
         }
     }
 
-    // End break
     async endBreak(userId: string): Promise<void> {
         try {
             const entry = await this.getActiveEntry(userId);
@@ -174,7 +165,7 @@ export class TimeTrackingService {
 
             const breakStart = entry.breakStart;
             const breakEnd = new Date();
-            const breakDuration = Math.floor((breakEnd.getTime() - this.toDate(breakStart).getTime()) / 1000); // seconds
+            const breakDuration = Math.floor((breakEnd.getTime() - this.toDate(breakStart).getTime()) / 1000);
 
             const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entry.id!));
             await runInInjectionContext(this.injector, () => updateDoc(docRef, {
@@ -189,7 +180,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Clock out
     async clockOut(userId: string): Promise<void> {
         try {
             const entry = await this.getActiveEntry(userId);
@@ -197,10 +187,8 @@ export class TimeTrackingService {
                 throw new Error('Must be clocked in to clock out');
             }
 
-            // If on break, end the break first
             if (entry.status === 'on-break' && entry.breakStart) {
                 await this.endBreak(userId);
-                // Get updated entry
                 const updatedEntry = await this.getActiveEntry(userId);
                 if (updatedEntry) {
                     entry.totalBreakTime = updatedEntry.totalBreakTime;
@@ -209,7 +197,7 @@ export class TimeTrackingService {
 
             const clockOutTime = new Date();
             const clockInTime = this.toDate(entry.clockInTime!);
-            const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 1000); // seconds
+            const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 1000);
             const workTime = totalTime - (entry.totalBreakTime || 0);
 
             const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entry.id!));
@@ -225,7 +213,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Get user's time entries with pagination
     async getUserTimeEntries(userId: string, pageLimit: number = 10, lastDoc?: any): Promise<{ entries: TimeEntry[], lastDoc: any }> {
         try {
             const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
@@ -262,7 +249,6 @@ export class TimeTrackingService {
         }
     }
 
-    // Real-time listener for active entry
     getActiveEntryRealtime(userId: string): Observable<TimeEntry | null> {
         return new Observable(observer => {
             const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
@@ -289,7 +275,6 @@ export class TimeTrackingService {
         });
     }
 
-    // Real-time listener for today's entries (all sessions for today)
     getTodayEntriesRealtime(userId: string): Observable<TimeEntry[]> {
         return new Observable(observer => {
             const today = this.getTodayString();
@@ -317,7 +302,6 @@ export class TimeTrackingService {
         });
     }
 
-    // Helper method to convert Firestore Timestamp to Date
     private toDate(timestamp: any): Date {
         if (timestamp && timestamp.toDate) {
             return timestamp.toDate();
@@ -328,37 +312,37 @@ export class TimeTrackingService {
         return new Date(timestamp);
     }
 
-    // Calculate current session time
     calculateCurrentSessionTime(entry: TimeEntry): number {
         if (!entry.clockInTime) return 0;
 
         const clockInTime = this.toDate(entry.clockInTime);
         const now = new Date();
-        let totalTime = Math.floor((now.getTime() - clockInTime.getTime()) / 1000); // seconds
 
-        // Subtract break time if currently on break
+        let totalTime = Math.floor((now.getTime() - clockInTime.getTime()) / 1000);
         if (entry.status === 'on-break' && entry.breakStart) {
             const breakStart = this.toDate(entry.breakStart);
             const currentBreakTime = Math.floor((now.getTime() - breakStart.getTime()) / 1000);
             totalTime -= currentBreakTime;
         }
 
-        // Subtract previous break time (totalBreakTime is now in seconds)
-        totalTime -= (entry.totalBreakTime || 0);
+        const previousBreakTime = entry.totalBreakTime || 0;
+        totalTime -= previousBreakTime;
 
         return Math.max(0, totalTime);
     }
 
-    // Format time duration in HH:MM:SS format
     formatDuration(seconds: number): string {
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+        if (!seconds || seconds < 0) return '00:00:00';
 
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        const totalSeconds = Math.floor(Math.abs(Number(seconds)));
+
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const remainingSeconds = totalSeconds % 60;
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 
-    // Format time duration in readable format (e.g., "2h 30m 45s")
     formatDurationReadable(seconds: number): string {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -373,13 +357,11 @@ export class TimeTrackingService {
         }
     }
 
-    // Format minutes to hours and minutes (legacy support)
     formatMinutes(minutes: number): string {
         const seconds = minutes * 60;
         return this.formatDuration(seconds);
     }
 
-    // Calculate total work time for all sessions today
     async getTotalWorkTimeToday(userId: string): Promise<number> {
         try {
             const entries = await this.getAllTodayEntries(userId);
@@ -389,7 +371,6 @@ export class TimeTrackingService {
                 if (entry.status === 'clocked-out' && entry.totalWorkTime) {
                     totalWorkTime += entry.totalWorkTime;
                 } else if (entry.status === 'clocked-in' || entry.status === 'on-break') {
-                    // Calculate current session time
                     totalWorkTime += this.calculateCurrentSessionTime(entry);
                 }
             }

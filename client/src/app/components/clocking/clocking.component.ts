@@ -15,8 +15,8 @@ import { Subscription, interval } from 'rxjs';
 export class ClockingComponent implements OnInit, OnDestroy {
   currentEntry: TimeEntry | null = null;
   currentTime = new Date();
-  sessionTime = 0; // in seconds
-  totalWorkTimeToday = 0; // in seconds - total across all sessions today
+  sessionTime = 0;
+  totalWorkTimeToday = 0;
   loading = false;
 
   timeEntries: TimeEntry[] = [];
@@ -60,7 +60,6 @@ export class ClockingComponent implements OnInit, OnDestroy {
       if (this.currentEntry && (this.currentEntry.status === 'clocked-in' || this.currentEntry.status === 'on-break')) {
         this.sessionTime = this.timeTrackingService.calculateCurrentSessionTime(this.currentEntry);
       }
-      // Update total work time every second to include current session
       this.updateTotalWorkTimeToday();
     });
   }
@@ -205,7 +204,7 @@ export class ClockingComponent implements OnInit, OnDestroy {
     this.loading = true;
     try {
       await this.timeTrackingService.clockOut(userId);
-      this.loadHistory(); // Refresh history
+      this.loadHistory();
       this.loadTotalWorkTimeToday();
     } catch (error) {
       console.error('Error clocking out:', error);
@@ -221,7 +220,6 @@ export class ClockingComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Helper methods
   formatTime(date: Date): string {
     return date.toLocaleTimeString('en-US', {
       hour12: false,
@@ -239,34 +237,27 @@ export class ClockingComponent implements OnInit, OnDestroy {
     return this.timeTrackingService.formatMinutes(minutes);
   }
 
-  // Format seconds directly (for new time entries stored in seconds)
   formatSeconds(seconds: number): string {
     return this.timeTrackingService.formatDuration(seconds);
   }
 
-  // Format work time - handles both old (minutes) and new (seconds) format
   formatWorkTime(workTime: number): string {
-    // If the work time is a large number (> 86400), it's likely in seconds
-    // If it's a small number (< 1440), it's likely in minutes (old format)
-    if (workTime > 1440) {
-      // Likely seconds
+    if (workTime < 600 && workTime > 0) {
+      return this.timeTrackingService.formatDuration(workTime);
+    } else if (workTime >= 600) {
       return this.timeTrackingService.formatDuration(workTime);
     } else {
-      // Likely minutes (old format)
-      return this.timeTrackingService.formatMinutes(workTime);
+      return this.timeTrackingService.formatDuration(workTime);
     }
   }
 
-  // Format break time - handles both old (minutes) and new (seconds) format
   formatBreakTime(breakTime: number): string {
-    // If the break time is a large number (> 1440), it's likely in seconds
-    // If it's a small number (< 1440), it's likely in minutes (old format)
-    if (breakTime > 1440) {
-      // Likely seconds
+    if (breakTime < 600 && breakTime > 0) {
+      return this.timeTrackingService.formatDuration(breakTime);
+    } else if (breakTime >= 600) {
       return this.timeTrackingService.formatDuration(breakTime);
     } else {
-      // Likely minutes (old format)
-      return this.timeTrackingService.formatMinutes(breakTime);
+      return this.timeTrackingService.formatDuration(breakTime);
     }
   }
 
