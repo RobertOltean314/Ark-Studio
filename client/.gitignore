@@ -10,7 +10,7 @@
 /node_modules
 npm-debug.log
 yarn-error.log
-./.firebase/
+.firebase/
 
 # CRITICAL: Environment files with secrets
 src/environments/environment.ts
