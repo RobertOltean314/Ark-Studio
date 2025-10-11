@@ -4,11 +4,13 @@ import { ProjectsComponent } from './components/projects/projects.component';
 import { CalculatorComponent } from './components/calculator/calculator.component';
 import { StatsComponent } from './components/stats/stats.component';
 import { ClockingComponent } from './components/clocking/clocking.component';
+import { ClientsComponent } from './components/clients/clients.component';
 import { authGuardTsGuard } from './auth/auth-guard.ts.guard';
 
 export const routes: Routes = [
   { path: 'welcome', component: WelcomeComponent },
   { path: 'projects', component: ProjectsComponent, canActivate: [authGuardTsGuard] },
+  { path: 'clients', component: ClientsComponent, canActivate: [authGuardTsGuard] },
   { path: 'calculator', component: CalculatorComponent, canActivate: [authGuardTsGuard] },
   { path: 'stats', component: StatsComponent, canActivate: [authGuardTsGuard] },
   { path: 'clocking', component: ClockingComponent, canActivate: [authGuardTsGuard] },

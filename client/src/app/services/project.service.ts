@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -22,7 +22,7 @@ import { Project } from '../models/project.interface';
   providedIn: 'root'
 })
 export class ProjectService {
-  private firestore = inject(Firestore);
+  constructor(private firestore: Firestore) { }
 
   async addProject(project: Omit<Project, 'id'>): Promise<string> {
     try {

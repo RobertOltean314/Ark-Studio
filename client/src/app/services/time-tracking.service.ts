@@ -1,4 +1,4 @@
-import { Injectable, inject, Injector, runInInjectionContext } from '@angular/core';
+import { Injectable, Injector, runInInjectionContext } from '@angular/core';
 import {
     Firestore,
     collection,
@@ -25,8 +25,10 @@ import { TimeEntry, } from '../models/time-entry.interface';
     providedIn: 'root'
 })
 export class TimeTrackingService {
-    private firestore = inject(Firestore);
-    private injector = inject(Injector);
+    constructor(
+        private firestore: Firestore,
+        private injector: Injector
+    ) { }
 
     private getTodayString(): string {
         return new Date().toISOString().split('T')[0];

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Auth, signInWithPopup, GoogleAuthProvider, signOut, authState } from '@angular/fire/auth';
 import { Observable, shareReplay } from 'rxjs';
 
@@ -6,10 +6,9 @@ import { Observable, shareReplay } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private auth: Auth = inject(Auth);
   user$: Observable<any>;
 
-  constructor() {
+  constructor(private auth: Auth) {
     this.user$ = authState(this.auth).pipe(
       shareReplay(1)
     );

@@ -1,10 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ProjectService } from '../../services/project.service';
+import { ClientService } from '../../services/client.service';
 import { FileUploadService } from '../../services/file-upload.service';
 import { AuthService } from '../../auth/auth.service';
 import { Project } from '../../models/project.interface';
+import { Client } from '../../models/client.interface';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -16,6 +19,7 @@ import { Subscription } from 'rxjs';
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
   projects: Project[] = [];
+  clients: Client[] = [];
   loading = true;
   isProcessing = false;
   showNewProjectForm = false;
@@ -25,20 +29,27 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   editingProject: Partial<Project> = {};
 
   private projectsSubscription?: Subscription;
+  private clientsSubscription?: Subscription;
 
   constructor(
     private projectService: ProjectService,
+    private clientService: ClientService,
     private fileUploadService: FileUploadService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.loadProjects();
+    this.loadClients();
   }
 
   ngOnDestroy() {
     if (this.projectsSubscription) {
       this.projectsSubscription.unsubscribe();
+    }
+    if (this.clientsSubscription) {
+      this.clientsSubscription.unsubscribe();
     }
   }
 
@@ -60,6 +71,25 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading projects:', error);
           this.loading = false;
+        }
+      });
+  }
+
+  loadClients() {
+    const userId = this.authService.getUserId();
+
+    if (!userId) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    this.clientsSubscription = this.clientService.getUserClientsRealtime(userId)
+      .subscribe({
+        next: (clients) => {
+          this.clients = clients;
+        },
+        error: (error) => {
+          console.error('Error loading clients:', error);
         }
       });
   }
@@ -119,6 +149,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
 
     if (this.newProject.description && this.newProject.description.trim()) {
       project.description = this.newProject.description.trim();
+    }
+
+    if (this.newProject.clientId) {
+      project.clientId = this.newProject.clientId;
     }
 
     try {
@@ -191,6 +225,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         updates.description = this.editingProject.description.trim();
       }
 
+      if (this.editingProject.clientId) {
+        updates.clientId = this.editingProject.clientId;
+      }
+
       await this.projectService.updateProject(this.editingProject.id, updates);
       this.closeUpdateModal();
     } catch (error) {
@@ -229,5 +267,21 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     } else {
       return parseFloat(timeStr) || 0;
     }
+  }
+
+  getClientName(clientId?: string): string {
+    if (!clientId) return 'No client assigned';
+    const client = this.clients.find(c => c.id === clientId);
+    return client ? client.name : 'Unknown client';
+  }
+
+  getClientRate(clientId?: string): number {
+    if (!clientId) return 0;
+    const client = this.clients.find(c => c.id === clientId);
+    return client ? client.ratePerSecond : 0;
+  }
+
+  goToClients() {
+    this.router.navigate(['/clients']);
   }
 }
