@@ -3,9 +3,10 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package.json*
-package-lock.json*
-yarn.lock*
+# Keep package.json and lock files for builds!
+# package.json
+# package-lock.json
+# yarn.lock
 .pnpm-lock.yaml
 
 # Angular
@@ -19,16 +20,33 @@ yarn.lock*
 /tmp/
 /out/
 
-# Environment and credentials
+# CRITICAL: Environment files with actual secrets
 .env
-.env.*
-*.env
-firebase-adminsdk.json/
-client/firebase.json
-client/firestore.rules
-client/firestore.indexes.json
-client/public/
-client/src/environments/environment*.ts
+.env.local
+.env.production
+.env.staging
+*.env.local
+*.env.production
+*.env.staging
+
+# CRITICAL: Firebase Admin SDK private keys
+firebase-adminsdk*.json
+*service-account*.json
+firebase-service-account*.json
+
+# Keep these Firebase config files (they're needed for builds):
+# client/firebase.json
+# client/firestore.rules  
+# client/firestore.indexes.json
+# client/.firebaserc
+
+# Keep public folder for builds:
+# client/public/
+
+# CRITICAL: Only ignore environment files with actual secrets
+client/src/environments/environment.ts
+client/src/environments/environment.prod.ts
+# But keep the example/template files
 
 # Logs
 *.log

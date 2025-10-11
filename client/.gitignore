@@ -11,6 +11,24 @@
 npm-debug.log
 yarn-error.log
 
+# CRITICAL: Environment files with secrets
+src/environments/environment.ts
+src/environments/environment.prod.ts
+.env
+.env.*
+*.env.local
+*.env.production
+
+# CRITICAL: Firebase Admin SDK Keys
+firebase-adminsdk*.json
+*service-account*.json
+
+# Keep these files for builds:
+# firebase.json
+# firestore.rules
+# firestore.indexes.json
+# .firebaserc
+
 # IDEs and editors
 .idea/
 .project
