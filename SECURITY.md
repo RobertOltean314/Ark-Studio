@@ -59,6 +59,17 @@ npm install
 1. Environment variables are automatically available during build
 2. Never include real API keys in client-side code for public APIs
 3. Use Firebase Security Rules to protect your data
+4. Use the provided `deploy.sh` script for consistent deployments
+
+#### Quick Deploy Commands:
+
+```bash
+# From the client directory:
+./deploy.sh              # Automated build and deploy
+# OR manually:
+ng build --configuration production
+firebase deploy --only hosting
+```
 
 ### For Other Hosting Platforms:
 
