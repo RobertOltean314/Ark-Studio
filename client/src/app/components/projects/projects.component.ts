@@ -102,13 +102,13 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   async createProject() {
     const userId = this.authService.getUserId();
 
-    if (!userId || !this.newProject.fileName || !this.newProject.duration) {
+    if (!userId || !this.newProject.fileName || !this.newProject.duration || this.newProject.duration <= 0) {
+      alert('Please ensure all required fields are filled and duration is greater than 0.');
       return;
     }
 
     const project: Omit<Project, 'id'> = {
       name: this.newProject.name || 'New Project',
-      description: this.newProject.description,
       status: this.newProject.status || 'unpaid',
       fileName: this.newProject.fileName,
       duration: this.newProject.duration,
@@ -116,6 +116,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
       updatedAt: new Date(),
       userId: userId
     };
+
+    if (this.newProject.description && this.newProject.description.trim()) {
+      project.description = this.newProject.description.trim();
+    }
 
     try {
       await this.projectService.addProject(project);
@@ -170,20 +174,60 @@ export class ProjectsComponent implements OnInit, OnDestroy {
   async updateProject() {
     if (!this.editingProject.id) return;
 
+    if (!this.editingProject.duration || this.editingProject.duration <= 0) {
+      alert('Please ensure duration is greater than 0.');
+      return;
+    }
+
     try {
       const updates: Partial<Project> = {
         name: this.editingProject.name,
         fileName: this.editingProject.fileName,
         duration: this.editingProject.duration,
-        description: this.editingProject.description,
         status: this.editingProject.status
       };
+
+      if (this.editingProject.description && this.editingProject.description.trim()) {
+        updates.description = this.editingProject.description.trim();
+      }
 
       await this.projectService.updateProject(this.editingProject.id, updates);
       this.closeUpdateModal();
     } catch (error) {
       console.error('Error updating project:', error);
       alert('Error updating project. Please try again.');
+    }
+  }
+
+  onDurationChange(event: any) {
+    const value = parseFloat(event.target.value);
+    if (!isNaN(value) && value >= 0) {
+      this.newProject.duration = Math.round(value * 10) / 10;
+    }
+  }
+
+  onEditDurationChange(event: any) {
+    const value = parseFloat(event.target.value);
+    if (!isNaN(value) && value >= 0) {
+      this.editingProject.duration = Math.round(value * 10) / 10;
+    }
+  }
+
+  parseTimeString(timeStr: string): number {
+    if (!timeStr) return 0;
+
+    const parts = timeStr.split(':');
+    if (parts.length === 3) {
+      const hours = parseInt(parts[0]) || 0;
+      const minutes = parseInt(parts[1]) || 0;
+      const seconds = parseFloat(parts[2]) || 0;
+      return hours * 3600 + minutes * 60 + seconds;
+    } else if (parts.length === 2) {
+      const minutes = parseInt(parts[0]) || 0;
+      const seconds = parseFloat(parts[1]) || 0;
+      return minutes * 60 + seconds;
+    } else {
+      return parseFloat(timeStr) || 0;
     }
   }
 }
