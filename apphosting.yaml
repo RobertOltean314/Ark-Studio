@@ -1,0 +1,21 @@
+# Firebase App Hosting configuration
+# This is only needed if you want to use Firebase App Hosting instead of regular Hosting
+
+# Build configuration
+build:
+  # The root directory where your project is located
+  rootDirectory: client
+
+  # Build commands
+  commands:
+    - npm ci
+    - npm run build --configuration=production
+
+  # Output directory (relative to rootDirectory)
+  outputDirectory: dist/client/browser
+
+# Runtime configuration
+run:
+  # Since this is a static Angular app, we need a simple web server
+  # We can use Firebase's default static hosting behavior
+  env: nodejs20
