@@ -123,4 +123,52 @@ export class ProjectService {
       throw error;
     }
   }
+
+  async getUnpaidProjects(userId: string): Promise<Project[]> {
+    try {
+      const projectsCollection = collection(this.firestore, 'projects');
+      const q = query(
+        projectsCollection,
+        where('userId', '==', userId),
+        where('status', '==', 'unpaid'),
+        orderBy('updatedAt', 'desc')
+      );
+
+      const querySnapshot = await getDocs(q);
+      const projects: Project[] = [];
+
+      querySnapshot.forEach((doc) => {
+        projects.push({ id: doc.id, ...doc.data() } as Project);
+      });
+
+      return projects;
+    } catch (error) {
+      console.error('Error getting unpaid projects:', error);
+      throw error;
+    }
+  }
+
+  getUnpaidProjectsRealtime(userId: string): Observable<Project[]> {
+    return new Observable(observer => {
+      const projectsCollection = collection(this.firestore, 'projects');
+      const q = query(
+        projectsCollection,
+        where('userId', '==', userId),
+        where('status', '==', 'unpaid'),
+        orderBy('updatedAt', 'desc')
+      );
+
+      const unsubscribe = onSnapshot(q, (querySnapshot: QuerySnapshot<DocumentData>) => {
+        const projects: Project[] = [];
+        querySnapshot.forEach((doc) => {
+          projects.push({ id: doc.id, ...doc.data() } as Project);
+        });
+        observer.next(projects);
+      }, (error) => {
+        observer.error(error);
+      });
+
+      return () => unsubscribe();
+    });
+  }
 }
