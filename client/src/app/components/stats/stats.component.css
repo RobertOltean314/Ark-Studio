@@ -1,0 +1,241 @@
+/* Custom animations and styles for the statistics component */
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+  background: linear-gradient(to right, #f6f7f8 8%, #edeef1 18%, #f6f7f8 33%);
+  background-size: 800px 104px;
+}
+
+/* Chart container styles */
+.chart-container {
+  position: relative;
+  height: 320px;
+  width: 100%;
+}
+
+/* Metric card hover effects */
+.metric-card {
+  transition: all 0.3s ease;
+  background: linear-gradient(145deg, #ffffff, #f8f9fa);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+/* Loading states */
+.loading-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-wave 1.5s infinite;
+}
+
+@keyframes loading-wave {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Chart specific styles */
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.chart-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .chart-container {
+    height: 280px;
+  }
+
+  .metric-card {
+    padding: 1rem;
+  }
+}
+
+/* Custom scrollbar for any overflow content */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.3) rgba(243, 244, 246, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(243, 244, 246, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5);
+}
+
+/* Error state styles */
+.error-container {
+  background: linear-gradient(135deg, #fef2f2, #fde8e8);
+  border-left: 4px solid #ef4444;
+}
+
+/* Success state styles */
+.success-container {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border-left: 4px solid #10b981;
+}
+
+/* Info state styles */
+.info-container {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border-left: 4px solid #3b82f6;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.success {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.status-badge.warning {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.status-badge.danger {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* Glass morphism effect for cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse-purple {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-purple {
+  animation: pulse-purple 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Chart tooltip styles */
+.chart-tooltip {
+  background: rgba(17, 24, 39, 0.95);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+/* Metric value animations */
+.metric-value {
+  transition: all 0.5s ease;
+}
+
+.metric-value.updated {
+  transform: scale(1.05);
+  color: #8b5cf6;
+}
+
+/* Empty state styles */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  color: #d1d5db;
+}
+
+/* Progress bar styles */
+.progress-bar {
+  background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+  height: 0.25rem;
+  border-radius: 9999px;
+  transition: width 0.5s ease;
+}
+
+.progress-container {
+  background: #e5e7eb;
+  height: 0.25rem;
+  border-radius: 9999px;
+  overflow: hidden;
+}
