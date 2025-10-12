@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TimeTrackingService } from '../../services/time-tracking.service';
 import { AuthService } from '../../auth/auth.service';
 import { TimeEntry } from '../../models/time-entry.interface';
@@ -8,7 +9,7 @@ import { Subscription, interval } from 'rxjs';
 @Component({
   selector: 'app-clocking',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './clocking.component.html',
   styleUrl: './clocking.component.css'
 })
@@ -25,6 +26,13 @@ export class ClockingComponent implements OnInit, OnDestroy {
   pageSize = 10;
   hasMorePages = true;
   lastDoc: any = null;
+
+  // Update/Edit functionality
+  showUpdateModal = false;
+  showCreateModal = false;
+  editingEntry: Partial<TimeEntry> = {};
+  newEntry: Partial<TimeEntry> = {};
+  updating = false;
 
   private entrySubscription?: Subscription;
   private clockSubscription?: Subscription;
@@ -286,6 +294,169 @@ export class ClockingComponent implements OnInit, OnDestroy {
       case 'on-break': return 'On Break';
       case 'clocked-out': return 'Clocked Out';
       default: return status;
+    }
+  }
+
+  // Update/Edit functionality methods
+  openUpdateModal(entry: TimeEntry): void {
+    if (entry.status === 'clocked-in' || entry.status === 'on-break') {
+      alert('Cannot edit active session. Please clock out first.');
+      return;
+    }
+
+    this.editingEntry = {
+      ...entry,
+      clockInTime: entry.clockInTime ? this.formatDateTimeLocal(this.toDate(entry.clockInTime)) : '',
+      clockOutTime: entry.clockOutTime ? this.formatDateTimeLocal(this.toDate(entry.clockOutTime)) : '',
+      totalBreakTime: entry.totalBreakTime || 0
+    };
+    this.showUpdateModal = true;
+  }
+
+  closeUpdateModal(): void {
+    this.showUpdateModal = false;
+    this.editingEntry = {};
+  }
+
+  openCreateModal(): void {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - (60 * 60 * 1000));
+
+    this.newEntry = {
+      clockInTime: this.formatDateTimeLocal(oneHourAgo),
+      clockOutTime: this.formatDateTimeLocal(now),
+      totalBreakTime: 0
+    };
+    this.showCreateModal = true;
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal = false;
+    this.newEntry = {};
+  }
+
+  async updateTimeEntry(): Promise<void> {
+    if (!this.editingEntry.id || !this.editingEntry.clockInTime || !this.editingEntry.clockOutTime) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const clockInTime = new Date(this.editingEntry.clockInTime as string);
+    const clockOutTime = new Date(this.editingEntry.clockOutTime as string);
+
+    if (clockOutTime <= clockInTime) {
+      alert('Clock out time must be after clock in time.');
+      return;
+    }
+
+    if (this.editingEntry.totalBreakTime! < 0) {
+      alert('Break time cannot be negative.');
+      return;
+    }
+
+    this.updating = true;
+    try {
+      await this.timeTrackingService.updateTimeEntry(this.editingEntry.id, {
+        clockInTime,
+        clockOutTime,
+        totalBreakTime: this.editingEntry.totalBreakTime || 0
+      });
+
+      this.closeUpdateModal();
+      this.loadHistory();
+      this.loadTotalWorkTimeToday();
+      alert('Time entry updated successfully!');
+    } catch (error) {
+      console.error('Error updating time entry:', error);
+      alert('Error updating time entry. Please try again.');
+    } finally {
+      this.updating = false;
+    }
+  }
+
+  async createTimeEntry(): Promise<void> {
+    if (!this.newEntry.clockInTime || !this.newEntry.clockOutTime) {
+      alert('Please fill in all required fields.');
+      return;
+    }
+
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    const clockInTime = new Date(this.newEntry.clockInTime as string);
+    const clockOutTime = new Date(this.newEntry.clockOutTime as string);
+
+    if (clockOutTime <= clockInTime) {
+      alert('Clock out time must be after clock in time.');
+      return;
+    }
+
+    if (this.newEntry.totalBreakTime! < 0) {
+      alert('Break time cannot be negative.');
+      return;
+    }
+
+    this.updating = true;
+    try {
+      await this.timeTrackingService.createManualTimeEntry(
+        userId,
+        clockInTime,
+        clockOutTime,
+        this.newEntry.totalBreakTime || 0
+      );
+
+      this.closeCreateModal();
+      this.loadHistory();
+      this.loadTotalWorkTimeToday();
+      alert('Time entry created successfully!');
+    } catch (error) {
+      console.error('Error creating time entry:', error);
+      alert('Error creating time entry. Please try again.');
+    } finally {
+      this.updating = false;
+    }
+  }
+
+  async deleteTimeEntry(entryId: string): Promise<void> {
+    if (!confirm('Are you sure you want to delete this time entry? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await this.timeTrackingService.deleteTimeEntry(entryId);
+      this.loadHistory();
+      this.loadTotalWorkTimeToday();
+      alert('Time entry deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting time entry:', error);
+      alert('Error deleting time entry. Please try again.');
+    }
+  }
+
+  private formatDateTimeLocal(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  formatBreakTimeForInput(seconds: number): number {
+    return Math.round(seconds / 60); // Convert seconds to minutes for input
+  }
+
+  formatBreakTimeFromInput(minutes: number): number {
+    return minutes * 60; // Convert minutes back to seconds
+  }
+
+  onBreakTimeChange(minutes: number, isEdit: boolean = false): void {
+    const breakTimeInSeconds = this.formatBreakTimeFromInput(minutes || 0);
+    if (isEdit) {
+      this.editingEntry.totalBreakTime = breakTimeInSeconds;
+    } else {
+      this.newEntry.totalBreakTime = breakTimeInSeconds;
     }
   }
 }

@@ -100,8 +100,20 @@
         <div class="max-w-6xl mx-auto">
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-800">Time History</h2>
-                    <p class="text-gray-600 mt-1">Your recent time tracking entries</p>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800">Time History</h2>
+                            <p class="text-gray-600 mt-1">Your recent time tracking entries</p>
+                        </div>
+                        <button (click)="openCreateModal()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span>Add Time Entry</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div *ngIf="loadingHistory && timeEntries.length === 0" class="p-8 text-center">
@@ -143,6 +155,10 @@
                                     class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -180,6 +196,28 @@
                                         {{ getStatusText(entry.status) }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <div class="flex space-x-2">
+                                        <button (click)="openUpdateModal(entry)"
+                                            [disabled]="entry.status === 'clocked-in' || entry.status === 'on-break'"
+                                            class="text-blue-600 hover:text-blue-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            title="Edit time entry">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+                                        <button (click)="deleteTimeEntry(entry.id!)"
+                                            [disabled]="entry.status === 'clocked-in' || entry.status === 'on-break'"
+                                            class="text-red-600 hover:text-red-900 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                            title="Delete time entry">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -192,6 +230,134 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Time Entry Modal -->
+<div *ngIf="showUpdateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Update Time Entry</h3>
+                <button (click)="closeUpdateModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form (ngSubmit)="updateTimeEntry()">
+                <div class="space-y-4">
+                    <div>
+                        <label for="updateClockInTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Clock In Time
+                        </label>
+                        <input type="datetime-local" id="updateClockInTime" [(ngModel)]="editingEntry.clockInTime"
+                            name="updateClockInTime" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="updateClockOutTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Clock Out Time
+                        </label>
+                        <input type="datetime-local" id="updateClockOutTime" [(ngModel)]="editingEntry.clockOutTime"
+                            name="updateClockOutTime" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="updateBreakTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Break Time (minutes)
+                        </label>
+                        <input type="number" id="updateBreakTime"
+                            [ngModel]="formatBreakTimeForInput(editingEntry.totalBreakTime || 0)"
+                            (ngModelChange)="onBreakTimeChange($event, true)" name="updateBreakTime" min="0"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter break time in minutes">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Current: {{ formatDuration(editingEntry.totalBreakTime || 0) }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" (click)="closeUpdateModal()"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="updating"
+                        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        {{ updating ? 'Updating...' : 'Update Entry' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Time Entry Modal -->
+<div *ngIf="showCreateModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Add Time Entry</h3>
+                <button (click)="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form (ngSubmit)="createTimeEntry()">
+                <div class="space-y-4">
+                    <div>
+                        <label for="newClockInTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Clock In Time
+                        </label>
+                        <input type="datetime-local" id="newClockInTime" [(ngModel)]="newEntry.clockInTime"
+                            name="newClockInTime" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="newClockOutTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Clock Out Time
+                        </label>
+                        <input type="datetime-local" id="newClockOutTime" [(ngModel)]="newEntry.clockOutTime"
+                            name="newClockOutTime" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="newBreakTime" class="block text-sm font-medium text-gray-700 mb-1">
+                            Break Time (minutes)
+                        </label>
+                        <input type="number" id="newBreakTime"
+                            [ngModel]="formatBreakTimeForInput(newEntry.totalBreakTime || 0)"
+                            (ngModelChange)="onBreakTimeChange($event, false)" name="newBreakTime" min="0"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter break time in minutes">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Preview: {{ formatDuration(newEntry.totalBreakTime || 0) }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" (click)="closeCreateModal()"
+                        class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="updating"
+                        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+                        {{ updating ? 'Creating...' : 'Create Entry' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -383,4 +383,62 @@ export class TimeTrackingService {
             return 0;
         }
     }
+
+    async updateTimeEntry(entryId: string, updates: Partial<TimeEntry>): Promise<void> {
+        try {
+            const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entryId));
+
+            // Calculate work time if clock in/out times are provided
+            if (updates.clockInTime && updates.clockOutTime) {
+                const clockInTime = this.toDate(updates.clockInTime);
+                const clockOutTime = this.toDate(updates.clockOutTime);
+                const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 1000);
+                const workTime = totalTime - (updates.totalBreakTime || 0);
+                updates.totalWorkTime = Math.max(0, workTime);
+                updates.status = 'clocked-out';
+            }
+
+            await runInInjectionContext(this.injector, () => updateDoc(docRef, {
+                ...updates,
+                updatedAt: new Date()
+            }));
+        } catch (error) {
+            console.error('Error updating time entry:', error);
+            throw error;
+        }
+    }
+
+    async deleteTimeEntry(entryId: string): Promise<void> {
+        try {
+            const docRef = runInInjectionContext(this.injector, () => doc(this.firestore, 'timeEntries', entryId));
+            await runInInjectionContext(this.injector, () => deleteDoc(docRef));
+        } catch (error) {
+            console.error('Error deleting time entry:', error);
+            throw error;
+        }
+    }
+
+    async createManualTimeEntry(userId: string, clockInTime: Date, clockOutTime: Date, totalBreakTime: number = 0): Promise<void> {
+        try {
+            const date = clockInTime.toISOString().split('T')[0];
+            const totalTime = Math.floor((clockOutTime.getTime() - clockInTime.getTime()) / 1000);
+            const workTime = totalTime - totalBreakTime;
+
+            const entriesCollection = runInInjectionContext(this.injector, () => collection(this.firestore, 'timeEntries'));
+            await runInInjectionContext(this.injector, () => addDoc(entriesCollection, {
+                userId,
+                date,
+                clockInTime,
+                clockOutTime,
+                totalBreakTime,
+                totalWorkTime: Math.max(0, workTime),
+                status: 'clocked-out',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }));
+        } catch (error) {
+            console.error('Error creating manual time entry:', error);
+            throw error;
+        }
+    }
 }
