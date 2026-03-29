@@ -11,9 +11,7 @@ yarn-error.log*
 
 # Angular
 /dist/
-/.angular/cache/
-/.angular/local/
-/.angular/tmp/
+/.angular
 
 # Build
 /build/

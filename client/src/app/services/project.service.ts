@@ -171,4 +171,27 @@ export class ProjectService {
       return () => unsubscribe();
     });
   }
+
+  async getProjectsByClient(userId: string, clientId: string): Promise<Project[]> {
+    try {
+      const projectsCollection = collection(this.firestore, 'projects');
+      const q = query(
+        projectsCollection,
+        where('userId', '==', userId),
+        where('clientId', '==', clientId)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const projects: Project[] = [];
+
+      querySnapshot.forEach((doc) => {
+        projects.push({ id: doc.id, ...doc.data() } as Project);
+      });
+
+      return projects;
+    } catch (error) {
+      console.error('Error getting projects by client:', error);
+      throw error;
+    }
+  }
 }
